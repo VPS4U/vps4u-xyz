@@ -57,6 +57,7 @@ Czyste, testowalne moduły ES6 reused przez serverless functions. Każdy ma >85%
 - **`lib/supabase-admin.js`** — `createSupabaseAdmin({url, serviceKey})` zwraca klienta z `service_role` (omija RLS). Używany TYLKO po stronie serwerowej (webhook'i, cron'y)
 - **`lib/admin-stats.js`** — czyste helpery agregacji płatności do dashboardu admina: `computeQuarterFromDate`, `sumPaymentsPlnGrosze`, `groupByQuarter`, `formatPlnFromGrosze`
 - **`lib/stripe-webhook.js`** — `processStripeEvent(event, deps)` z dependency injection (ports & adapters); używany przez `api/stripe/webhook.js`
+- **`lib/admin-alerts.js`** — `checkAndAlertThresholds(deps)`: po każdej nowej wpłacie liczy procent wykorzystania capu kwartalnego, dla każdego newly-crossed threshold próbuje insert do `alert_log` (idempotencja przez unique constraint) i wysyła mail Brevo
 
 ### Backend (Vercel Serverless Functions)
 - **Folder**: `/api/` w repo

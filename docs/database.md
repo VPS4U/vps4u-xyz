@@ -66,6 +66,15 @@ Plik źródłowy SQL: do skopiowania z [README.md](README.md) — będzie zarzą
 - `quarter text` — ustawiane triggerem (`Q1-2026`, `Q2-2026`, ...) — indeksowane dla cap tracking
 - `created_at timestamptz`
 
+**`public.admin_settings`** — key-value config dla admina (Stage 4):
+- `key text` (PK), `value jsonb`, `updated_at timestamptz`
+- Seeded klucze: `quarterly_cap` (`{grosze, currency}`), `alert_thresholds_pct` (np. `[50, 80, 100]`), `alert_email`
+- RLS: read+update tylko dla adminów
+
+**`public.alert_log`** — historia wysłanych alertów (Stage 4):
+- `id uuid`, `quarter text`, `threshold_pct int`, `amount_pln_grosze bigint`, `cap_pln_grosze bigint`, `fired_at timestamptz`
+- `unique(quarter, threshold_pct)` — gwarancja jednokrotnego alertu per próg w kwartale (webhook retry-safe)
+
 **`public.vps_instances`** — fizyczne VPS-y:
 - `id uuid` — PK
 - `subscription_id uuid` — FK

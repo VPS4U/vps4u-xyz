@@ -4,6 +4,17 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #17] — 2026-05-22
+
+- **Stage 4**: threshold alerts przez Brevo
+- Migracja 006: `admin_settings` (KV: `quarterly_cap`, `alert_thresholds_pct`, `alert_email`) + `alert_log` z `unique(quarter, threshold_pct)`. RLS przez `current_user_is_admin()`. Seed defaultów (50 000 PLN cap, [50,80,100]%, email właściciela)
+- `lib/admin-alerts.js` — `checkAndAlertThresholds(deps)`: pure logika, port-and-adapter pattern
+- 6 nowych testów (`tests/unit/admin-alerts.test.js`): under, single threshold, multi-threshold, idempotency, error propagation, cap=0
+- `lib/stripe-webhook.js` — extended: `insertPayment` zwraca bool, `afterPaymentInserted` wywoływane tylko dla nowych wpisów (nie duplikatów retry)
+- 2 nowe testy webhook'a — afterPaymentInserted dla nowego insertu vs conflict
+- `api/stripe/webhook.js` — wiring: po każdym nowym insertcie pobiera settings, sumuje kwartał, wstawia do alert_log, wysyła Brevo
+- Total: **39 unit testów** + 8 E2E
+
 ## [PR #16] — 2026-05-22
 
 - Stage 0c: Playwright E2E + nowy CI check `e2e`
