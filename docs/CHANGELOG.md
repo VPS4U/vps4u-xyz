@@ -4,6 +4,16 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #8] — 2026-05-22
+
+- Stage 1: helpery backendowe z testami TDD
+  - `lib/fx.js` — `getEurPlnRate(date)` z NBP API + `convertEurCentsToPlnGrosze(cents, rate)`
+  - `lib/brevo.js` — `sendBrevoEmail({apiKey, to, subject, htmlContent, sender})`
+  - `lib/supabase-admin.js` — `createSupabaseAdmin({url, serviceKey})` (service_role klient)
+- MSW (Mock Service Worker) jako mock zewnętrznych API w testach (NBP, Brevo)
+- `@supabase/supabase-js` jako pierwsza prod dependency
+- 17 testów w `tests/unit/` (fx, brevo, supabase-admin, smoke)
+
 ## [PR #7] — 2026-05-22
 
 - Stage 0b: GitHub Actions workflows (`pr-checks.yml`, `docs-check.yml`) wymuszające testy, lint, format i aktualizację dokumentacji
