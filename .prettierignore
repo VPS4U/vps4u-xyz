@@ -1,0 +1,23 @@
+node_modules/
+coverage/
+.vercel/
+dist/
+build/
+*.min.js
+*.min.css
+package-lock.json
+.mcp.json
+
+# Frontend legacy — sformatujemy osobnym PR-em później (Stage 0a scope)
+*.html
+*.jsx
+*.css
+config.js
+cookie-banner.js
+subpage-glue.js
+subpage-i18n.js
+
+# Docs ma własną konwencję
+docs/
+README.md
+vercel.json
