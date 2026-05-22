@@ -6,10 +6,11 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Node / build cache (in case we add tooling later)
+# Node / build cache
 node_modules/
 dist/
 build/
+coverage/
 *.log
 npm-debug.log*
 
