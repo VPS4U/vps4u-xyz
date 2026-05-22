@@ -4,6 +4,12 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #14] — 2026-05-22
+
+- Hotfix `panel.html`: `return;` na top-level `<script type="module">` to SyntaxError w ES module — cały skrypt nie kompilował się i strona stale wisiała na "Sprawdzanie sesji…"
+- Zamieniony na `throw new Error('no session')` (jak w `admin.html`)
+- Bug obecny od PR #4 (Stage 1); użytkownik nigdy nie zobaczył pełnej zawartości panelu
+
 ## [PR #13] — 2026-05-22
 
 - Stage 3: rola adminowa + read-only dashboard `/admin`

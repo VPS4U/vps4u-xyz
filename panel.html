@@ -86,7 +86,7 @@
 
   if (!session) {
     window.location.replace('/logowanie');
-    return;
+    throw new Error('no session');
   }
 
   const userId = session.user.id;
