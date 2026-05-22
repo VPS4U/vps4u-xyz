@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Panel · VPS4U.xyz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="subpages.css" />
+<style>
+  .panel-shell { max-width:980px; margin:0 auto; padding:48px 24px 96px }
+  .panel-head { display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap; margin-bottom:32px; padding-bottom:24px; border-bottom:1.5px solid var(--ink) }
+  .panel-head h1 { font-family:'Archivo Black',sans-serif; font-size:36px; letter-spacing:-0.02em; line-height:1; margin:0 0 8px }
+  .panel-head .who { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--ink-2); text-transform:uppercase; letter-spacing:.06em }
+  .panel-section { margin-top:32px }
+  .panel-section h2 { font-family:'Archivo Black',sans-serif; font-size:18px; text-transform:uppercase; letter-spacing:.04em; margin:0 0 14px }
+  .panel-card { border:1.5px solid var(--ink); padding:20px; background:var(--cream-2, #f5f0e6) }
+  .panel-empty { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; padding:24px; border:1.5px dashed var(--ink-2); text-align:center }
+  .panel-loading { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); padding:24px; text-align:center }
+</style>
+</head>
+<body data-page="panel">
+
+<nav class="nav">
+  <div class="wrap nav-row">
+    <a href="index.html" class="logo">
+      <span class="badge">v4</span>
+      <span>VPS4U<span style="color:var(--accent)">.</span>xyz</span>
+    </a>
+    <div class="nav-right">
+      <button id="logout-btn" class="btn" style="padding:8px 14px; font-size:13px; background:var(--ink); color:var(--cream)">Wyloguj</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+<div class="panel-shell">
+
+  <div id="panel-loading" class="panel-loading">// Sprawdzanie sesji…</div>
+
+  <div id="panel-content" style="display:none">
+    <header class="panel-head">
+      <div>
+        <h1>Panel klienta</h1>
+        <p class="who">Zalogowany jako: <strong id="user-email">…</strong></p>
+      </div>
+    </header>
+
+    <section class="panel-section">
+      <h2>Twoje VPS-y</h2>
+      <div id="vps-list" class="panel-empty">// Brak instancji. Po opłaceniu zamówienia VPS pojawi się tutaj automatycznie.</div>
+    </section>
+
+    <section class="panel-section">
+      <h2>Subskrypcje</h2>
+      <div id="subs-list" class="panel-empty">// Brak aktywnych subskrypcji.</div>
+    </section>
+
+    <section class="panel-section">
+      <h2>Konto</h2>
+      <div class="panel-card">
+        <p style="margin:0 0 12px; font-size:14px"><strong>Email:</strong> <span id="account-email">…</span></p>
+        <p style="margin:0 0 12px; font-size:14px"><strong>Stripe customer ID:</strong> <span id="account-stripe" style="font-family:'JetBrains Mono',monospace; font-size:12px">—</span></p>
+        <p style="margin:0; font-size:14px"><strong>Konto utworzone:</strong> <span id="account-created">…</span></p>
+      </div>
+    </section>
+  </div>
+
+</div>
+</main>
+
+<script src="config.js"></script>
+<script src="cookie-banner.js"></script>
+<script type="module">
+  import { supabase } from '/lib/supabase.js';
+
+  const loading = document.getElementById('panel-loading');
+  const content = document.getElementById('panel-content');
+
+  // detectSessionInUrl: true (default w lib/supabase.js) sam wyciąga tokeny z hashu i czyści URL
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
+    window.location.replace('/logowanie');
+    return;
+  }
+
+  const userId = session.user.id;
+  document.getElementById('user-email').textContent = session.user.email;
+  document.getElementById('account-email').textContent = session.user.email;
+
+  // Profil (RLS pozwoli czytać tylko własny)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('stripe_customer_id, created_at')
+    .eq('id', userId)
+    .single();
+
+  if (profile) {
+    document.getElementById('account-stripe').textContent = profile.stripe_customer_id || '— (brak — opłać zamówienie, żeby się pojawiło)';
+    document.getElementById('account-created').textContent = new Date(profile.created_at).toLocaleString('pl-PL');
+  }
+
+  // VPS-y
+  const { data: vps } = await supabase
+    .from('vps_instances')
+    .select('id, ip_address, region, status, created_at')
+    .order('created_at', { ascending: false });
+
+  if (vps && vps.length > 0) {
+    const list = document.getElementById('vps-list');
+    list.className = '';
+    list.innerHTML = vps.map(v => `
+      <div class="panel-card" style="margin-bottom:12px">
+        <div style="display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap">
+          <div>
+            <strong style="font-family:'Archivo Black',sans-serif">${v.region || '?'}</strong>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); margin-left:12px">${v.ip_address || 'oczekuje na IP'}</span>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:11px; padding:2px 8px; border:1px solid var(--ink); text-transform:uppercase">${v.status}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Subskrypcje
+  const { data: subs } = await supabase
+    .from('subscriptions')
+    .select('id, plan_name, status, current_period_end, cancel_at_period_end')
+    .order('created_at', { ascending: false });
+
+  if (subs && subs.length > 0) {
+    const list = document.getElementById('subs-list');
+    list.className = '';
+    list.innerHTML = subs.map(s => `
+      <div class="panel-card" style="margin-bottom:12px">
+        <div style="display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap">
+          <div>
+            <strong style="font-family:'Archivo Black',sans-serif">${s.plan_name}</strong>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); margin-left:12px">
+              ${s.current_period_end ? 'do ' + new Date(s.current_period_end).toLocaleDateString('pl-PL') : ''}
+            </span>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:11px; padding:2px 8px; border:1px solid var(--ink); text-transform:uppercase">${s.status}${s.cancel_at_period_end ? ' · anuluje się' : ''}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  loading.style.display = 'none';
+  content.style.display = 'block';
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/';
+  });
+</script>
+</body>
+</html>

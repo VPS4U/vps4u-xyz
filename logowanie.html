@@ -88,7 +88,7 @@
       </h1>
       <p class="auth-sub" data-i="form.sub">Nie kupiłeś jeszcze VPS-a? <a href="rejestracja.html">Zobacz cennik →</a></p>
 
-      <form id="login-form" onsubmit="event.preventDefault(); var c=this.closest('.auth-card'); c.querySelector('.login-form-row').style.display='none'; c.querySelector('.login-success').style.display='flex';">
+      <form id="login-form">
 
         <div class="login-form-row">
           <div class="field">
@@ -108,6 +108,11 @@
           <p style="margin:12px 0 0; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; line-height:1.6" data-i="form.note">
             // Brak hasła = brak wycieków. Każde logowanie wymaga kliknięcia w świeży link wysłany na Twój email.
           </p>
+        </div>
+
+        <div class="login-error" style="display:none; flex-direction:column; gap:8px; padding:16px; border:1.5px solid var(--accent); background:rgba(239,74,20,.06); margin-bottom:16px">
+          <strong style="font-family:'JetBrains Mono', monospace; font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent)" data-i="form.err.t">// Błąd</strong>
+          <p class="login-error-msg" style="margin:0; font-size:14px; color:var(--ink-2); line-height:1.5"></p>
         </div>
 
         <div class="login-success" style="display:none; flex-direction:column; gap:14px; padding:24px; border:1.5px solid var(--ok); background:rgba(31,122,58,.08)">
@@ -185,8 +190,55 @@
   </div>
 </footer>
 
+<script src="config.js"></script>
 <script src="subpage-i18n.js"></script>
 <script src="subpage-glue.js"></script>
 <script src="cookie-banner.js"></script>
+<script type="module">
+  import { supabase } from '/lib/supabase.js';
+
+  const form = document.getElementById('login-form');
+  const card = form.closest('.auth-card');
+  const row = card.querySelector('.login-form-row');
+  const success = card.querySelector('.login-success');
+  const errorBox = card.querySelector('.login-error');
+  const errorMsg = card.querySelector('.login-error-msg');
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const submitLabel = submitBtn.querySelector('span[data-i]');
+  const origLabel = submitLabel.textContent;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.style.display = 'none';
+    submitBtn.disabled = true;
+    submitLabel.textContent = '...';
+
+    const email = form.email.value.trim().toLowerCase();
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        // konta tworzy webhook Stripe po płatności — logowanie tylko dla istniejących
+        shouldCreateUser: false,
+        emailRedirectTo: `${window.location.origin}/panel`,
+      },
+    });
+
+    submitBtn.disabled = false;
+    submitLabel.textContent = origLabel;
+
+    if (error) {
+      // Nie ujawniamy, czy email istnieje — pokazujemy generyczny success.
+      // Wyjątek: rate limit (komunikat dla usera, nie bezpieczeństwo).
+      if (error.status === 429 || /rate/i.test(error.message)) {
+        errorMsg.textContent = 'Za dużo prób. Spróbuj ponownie za kilka minut.';
+        errorBox.style.display = 'flex';
+        return;
+      }
+      // signups disabled (user nie istnieje) — pokazujemy success żeby nie leakować
+    }
+    row.style.display = 'none';
+    success.style.display = 'flex';
+  });
+</script>
 </body>
 </html>
