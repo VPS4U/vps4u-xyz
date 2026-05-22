@@ -4,6 +4,12 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #12] — 2026-05-22
+
+- Webhook tolerancja na nieobsługiwane waluty: zamiast `throw` → `console.warn` + skip
+- Powód: Stripe CLI test fixtures wysyłają eventy w USD; rzucanie błędu powodowało infinite retry ze strony Stripe i 500 w logach. Real prod traffic będzie EUR/PLN, ale safety net jest ważny
+- Update testu `pomija (z warningiem) płatność w nieobsługiwanej walucie`
+
 ## [PR #11] — 2026-05-22
 
 - Drugi hotfix webhook'a Stripe — przepisany na **Node-style** (`req`/`res`, raw body przez stream)

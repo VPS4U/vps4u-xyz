@@ -103,8 +103,8 @@ describe('processStripeEvent — invoice.payment_succeeded', () => {
     warn.mockRestore();
   });
 
-  it('rzuca błąd dla nieobsługiwanej waluty', async () => {
-    deps.findProfileByStripeId.mockResolvedValue({ id: 'user-uuid-1' });
+  it('pomija (z warningiem) płatność w nieobsługiwanej walucie', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const evt = {
       type: 'invoice.payment_succeeded',
       data: {
@@ -112,7 +112,11 @@ describe('processStripeEvent — invoice.payment_succeeded', () => {
       },
     };
 
-    await expect(processStripeEvent(evt, deps)).rejects.toThrow(/usd|unsupported/i);
+    await processStripeEvent(evt, deps);
+
+    expect(deps.insertPayment).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/usd/i));
+    warn.mockRestore();
   });
 });
 
