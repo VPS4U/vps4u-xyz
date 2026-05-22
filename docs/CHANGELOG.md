@@ -4,6 +4,16 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #16] — 2026-05-22
+
+- Stage 0c: Playwright E2E + nowy CI check `e2e`
+- `playwright.config.js`: Chromium only, lokalny webServer `python3 -m http.server 4173`, baseURL `localhost:4173`, retries 2 w CI
+- `tests/e2e/smoke.spec.js` — 5 testów weryfikujących że każda strona (index, panel, admin, logowanie, rejestracja) ładuje się bez pageerror i console.error. **Wykryłby SyntaxError z PR #14.**
+- `tests/e2e/guards.spec.js` — 3 testy że `/panel` i `/admin` bez sesji przekierowują na `/logowanie` i nie wiszą na "Sprawdzanie sesji"
+- Nowy job `e2e` w `.github/workflows/pr-checks.yml` z cache'em Playwright browsers
+- Required status check `e2e` na branch protection (dodam po pierwszym przebiegu CI)
+- `.gitignore` — `test-results/`, `playwright-report/`, `playwright/.cache/`
+
 ## [PR #15] — 2026-05-22
 
 - Migracja 005: fix infinite recursion w admin RLS policies

@@ -12,10 +12,13 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
+    "@playwright/test": "^1.48.2",
     "@vitest/coverage-v8": "^2.1.4",
     "eslint": "^9.14.0",
     "globals": "^15.12.0",

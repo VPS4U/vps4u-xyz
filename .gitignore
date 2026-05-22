@@ -12,6 +12,11 @@ dist/
 build/
 coverage/
 *.log
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
 npm-debug.log*
 
 # Local secrets (NEVER commit FTP creds)
