@@ -4,6 +4,14 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #11] — 2026-05-22
+
+- Drugi hotfix webhook'a Stripe — przepisany na **Node-style** (`req`/`res`, raw body przez stream)
+- Powód: bare `api/` folder bez Next.js w Vercelu używa Node IncomingMessage by default; Web API `Request` nie jest tu dostępne. Pierwsza próba (PR #10) usuwała tylko `config.api.bodyParser`, ale to nie zmieniło runtime mode'u — funkcja dalej dostawała `req`, a kod wołał `.headers.get()`
+- Przywrócony `bodyParser: false` (potrzebny dla legacy Node mode żeby Stripe mógł zweryfikować raw bytes)
+- Dodany `readRawBody(req)` helper czytający body przez stream
+- `process_stripe_event` (czysta logika w `lib/`) bez zmian — 23 testy nadal zielone
+
 ## [PR #10] — 2026-05-22
 
 - Hotfix: usunięty legacy `export const config = { api: { bodyParser: false } }` z `api/stripe/webhook.js`
