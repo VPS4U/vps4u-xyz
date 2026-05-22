@@ -17,7 +17,7 @@ Każda zmiana funkcjonalna wymaga testów napisanych **przed** kodem. PR bez tes
 - **Vitest** — runner, lekki, ESM-native
 - **MSW** (planowane) — mock zewnętrznych API (Stripe, NBP, Brevo)
 - **@testing-library/dom** (planowane) — DOM testy dla `panel.html`/`admin.html`
-- **Playwright** (planowane) — E2E dla 2 critical paths
+- **Playwright** ✅ (Stage 0c) — E2E przeciwko lokalnemu `python3 -m http.server`
 
 ## Cele pokrycia
 
@@ -46,9 +46,10 @@ Required status checks na branch protection `main`:
 
 | Check                 | Co sprawdza                                                                   |
 | --------------------- | ----------------------------------------------------------------------------- |
-| `tests`               | `npm test` zwraca 0                                                           |
+| `tests`               | `npm test` zwraca 0 (unit + integration via Vitest)                           |
 | `lint`                | `npm run lint` zwraca 0                                                       |
 | `format`              | `npm run format:check` zwraca 0                                               |
+| `e2e`                 | `npm run test:e2e` zwraca 0 (Playwright + Chromium)                           |
 | `docs-required`       | `docs/CHANGELOG.md` zmieniony **i** (zmiana kodu → `docs/**` też zmienione) |
 
 Wyjątek: PR z labelem `no-docs-needed` pomija `docs-required` (label nadaje tylko owner).
