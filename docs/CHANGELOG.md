@@ -4,6 +4,17 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #9] — 2026-05-22
+
+- Stage 2: pierwszy backend endpoint + lokalna kopia płatności
+- Migracja 003 (`db/migrations/003_payments.sql`): tabela `public.payments` z `provider`, `external_charge_id`, FX columns (`amount_pln_grosze`, `fx_rate`, `fx_source`, `fx_table_date`), kolumną `quarter` ustawianą triggerem, RLS włączone
+- `lib/stripe-webhook.js` — czysta logika `processStripeEvent(event, deps)` (port-and-adapter pattern, łatwo testowalna)
+- `api/stripe/webhook.js` — Vercel handler: weryfikacja sygnatury Stripe + dispatch + zapis do `payments`
+- Obsługa eventów: `checkout.session.completed` (link profilu ze Stripe customer ID), `invoice.payment_succeeded` + `charge.succeeded` (insert do `payments` z FX z NBP)
+- Idempotencja przez `unique(provider, external_charge_id)` + ignore na `23505`
+- 6 nowych testów (`tests/unit/stripe-webhook.test.js`): EUR z FX, PLN bez FX, missing profile, unsupported currency, checkout linking, ignored events
+- `stripe` SDK jako prod dep
+
 ## [PR #8] — 2026-05-22
 
 - Stage 1: helpery backendowe z testami TDD
