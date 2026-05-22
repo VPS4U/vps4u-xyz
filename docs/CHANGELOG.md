@@ -4,6 +4,14 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #15] — 2026-05-22
+
+- Migracja 005: fix infinite recursion w admin RLS policies
+- Poprzednie policies (PR #13) używały subquery `select is_admin from public.profiles where id = auth.uid()` w `using (...)` — sam subquery podlega RLS, więc Postgres szedł w nieskończoność i zwracał 500 dla wszystkich SELECT-ów na profiles/subscriptions/vps_instances/payments
+- Naprawione przez SECURITY DEFINER funkcję `current_user_is_admin()` która omija RLS (ma `set search_path = ''` dla bezpieczeństwa, `stable` dla cache'owania per query)
+- Policies przepisane na `using (public.current_user_is_admin())` — bez rekursji
+- Zaaplikowane na prod przez Supabase MCP (zanim PR został otwarty — bo blokowało użytkownika w UI)
+
 ## [PR #14] — 2026-05-22
 
 - Hotfix `panel.html`: `return;` na top-level `<script type="module">` to SyntaxError w ES module — cały skrypt nie kompilował się i strona stale wisiała na "Sprawdzanie sesji…"
