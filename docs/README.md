@@ -9,6 +9,10 @@ Wewnętrzna dokumentacja projektu. Czytaj w tej kolejności, jeśli widzisz to p
 5. [payments.md](payments.md) — Stripe + provisioning VPS-ów
 6. [database.md](database.md) — schemat Postgres + Row Level Security
 
+## Plany / RFC
+
+- [plans/revenue-cap-tracking.md](plans/revenue-cap-tracking.md) — admin tracking kwartalnych wpłat z alertami przez Brevo (zatwierdzony 2026-05-22)
+
 ## Aktualny stan (2026-05)
 
 | Komponent       | Status                | Hosting              |
