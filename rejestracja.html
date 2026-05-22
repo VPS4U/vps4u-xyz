@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Załóż konto · VPS4U.xyz</title>
+<meta name="description" content="Konto na VPS4U.xyz tworzy się automatycznie przy pierwszym zakupie. Płatność przez Stripe, dane SSH na maila w 47 sekund." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="subpages.css" />
+<style>
+/* Page-specific tweaks for the signup explainer */
+.signup-wrap{padding:48px 0 96px}
+.signup-grid{display:grid; grid-template-columns: 1.05fr 1fr; gap:64px; align-items:start}
+@media (max-width:980px){ .signup-grid{grid-template-columns:1fr; gap:40px} }
+
+.steps{display:flex; flex-direction:column; gap:0; border-top:1.5px solid var(--ink); margin-top:32px}
+.step{
+  display:grid; grid-template-columns: 64px 1fr; gap:20px; padding:24px 0;
+  border-bottom:1.5px solid var(--rule);
+}
+.step-n{
+  font-family:'Archivo Black', sans-serif; font-size:42px;
+  line-height:1; letter-spacing:-0.03em; color:var(--accent);
+}
+.step h4{margin:0 0 6px; font-family:'Archivo', sans-serif; font-weight:700; font-size:22px; letter-spacing:-0.01em}
+.step p{margin:0; color:var(--ink-2); font-size:15px; line-height:1.55; max-width:540px}
+.step .mark{
+  display:inline-block; margin-top:8px;
+  font-family:'JetBrains Mono', monospace; font-size:11px;
+  padding:4px 8px; background:var(--ink); color:var(--cream);
+  text-transform:uppercase; letter-spacing:.08em;
+}
+
+.plans-mini{display:flex; flex-direction:column; gap:0; border:1.5px solid var(--ink); box-shadow:6px 6px 0 var(--ink); background:var(--paper)}
+.plan-mini{
+  display:grid; grid-template-columns: 1fr auto auto; gap:18px;
+  align-items:center; padding:20px 22px; border-bottom:1.5px solid var(--ink);
+  transition:background .12s;
+}
+.plan-mini:last-child{border-bottom:0}
+.plan-mini:hover{background:var(--cream)}
+.plan-mini.featured{background:var(--ink); color:var(--cream)}
+.plan-mini.featured:hover{background:#1a1814}
+.plan-mini .pm-name{
+  display:flex; flex-direction:column; gap:4px;
+}
+.plan-mini .pm-name b{font-family:'Archivo Black', sans-serif; font-size:22px; letter-spacing:-0.02em}
+.plan-mini.featured .pm-name b{color:var(--accent)}
+.plan-mini .pm-name span{font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted)}
+.plan-mini.featured .pm-name span{color:#a8a299}
+.plan-mini .pm-price{
+  display:flex; align-items:baseline; gap:2px;
+  font-family:'Archivo Black', sans-serif; font-size:28px; line-height:1; letter-spacing:-0.025em;
+}
+.plan-mini .pm-price .cur{font-size:16px; margin-top:-6px}
+.plan-mini .pm-price .per{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); margin-left:6px; font-weight:500; text-transform:uppercase; letter-spacing:.08em}
+.plan-mini.featured .pm-price .per{color:#a8a299}
+.plan-mini .pm-cta{
+  padding:11px 16px; font-size:13px; white-space:nowrap;
+}
+
+.signup-note{
+  border:1.5px solid var(--ink); padding:20px 22px;
+  background:var(--cream); margin-top:24px;
+}
+.signup-note h5{
+  font-family:'JetBrains Mono', monospace; font-size:11px;
+  margin:0 0 8px; color:var(--accent);
+  text-transform:uppercase; letter-spacing:.12em;
+}
+.signup-note p{margin:0; font-size:14px; line-height:1.55; color:var(--ink-2)}
+
+.consent-block{
+  margin-top:32px; padding:24px 22px;
+  border:1.5px dashed var(--rule); background:var(--paper);
+  display:flex; flex-direction:column; gap:14px;
+}
+.consent-block h5{
+  font-family:'JetBrains Mono', monospace; font-size:11px;
+  margin:0; color:var(--muted);
+  text-transform:uppercase; letter-spacing:.12em;
+}
+.consent-block .field-check{margin:0}
+
+.pay-logos{
+  display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+  padding:18px 0 0; margin-top:8px;
+  border-top:1px dashed var(--rule);
+  font-family:'JetBrains Mono', monospace; font-size:11px;
+  color:var(--muted); text-transform:uppercase; letter-spacing:.08em;
+}
+.pay-logos .lbl{display:flex; align-items:center; gap:8px}
+.pay-logos .lbl::before{content:""; width:6px; height:6px; background:var(--ok); border-radius:50%}
+.pay-logos .row{display:flex; gap:10px}
+.pay-logos .pay-badge{
+  display:inline-flex; align-items:center;
+  padding:5px 9px; border:1.5px solid var(--ink); background:var(--cream);
+  font-weight:700; color:var(--ink); letter-spacing:0;
+}
+</style>
+</head>
+<body data-page="signup">
+
+<div class="ticker">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
+<nav class="nav">
+  <div class="wrap nav-row">
+    <a href="index.html" class="logo">
+      <span class="badge">v4</span>
+      <span>VPS4U<span style="color:var(--accent)">.</span>xyz</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html#config" data-i="nav.vps">VPS</a>
+      <a href="index.html#services" data-i="nav.services">Usługi</a>
+      <a href="index.html#pricing" data-i="nav.pricing">Cennik</a>
+      <a href="o-mnie.html" data-i="nav.about">O mnie</a>
+      <a href="index.html#blog" data-i="nav.blog">Blog</a>
+    </div>
+    <div class="nav-right">
+      <div class="lang">
+        <button id="lang-pl" class="active">PL</button>
+        <button id="lang-en">EN</button>
+      </div>
+      <a href="logowanie.html" class="btn" style="padding:8px 14px; font-size:13px" data-i="nav.login">Logowanie</a>
+      <a href="rejestracja.html" class="btn btn-primary" style="padding:8px 14px; font-size:13px; background:var(--ink); border-color:var(--ink); color:var(--accent)" data-i="nav.signup">Załóż konto</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<section class="subpage-hero wrap">
+  <div class="subpage-eyebrow" data-i="hero.eb">REJESTRACJA · 47 SEKUND · ZERO FORMULARZY</div>
+  <h1 class="subpage-h1">
+    <span data-i="hero.t1">Konto tworzy się</span><br/>
+    <em data-i="hero.t2"> przy pierwszym zakupie.</em>
+  </h1>
+  <p class="section-lede" data-i="hero.lede" style="max-width:760px; font-size:19px; margin-top:12px">
+    Nie ma osobnej rejestracji. Wybierasz plan, płacisz przez Stripe, dostajesz dane SSH na maila — wszystko w niespełna minutę. Konto jest tworzone automatycznie na adres email z płatności.
+  </p>
+</section>
+
+<section class="wrap signup-wrap">
+  <div class="signup-grid">
+
+    <!-- LEFT — Steps -->
+    <div>
+      <div class="section-num" data-i="steps.num">JAK TO DZIAŁA</div>
+      <h2 class="section-title" style="margin:14px 0 0; font-size:48px">
+        <span data-i="steps.t1">Cztery kroki</span><em data-i="steps.t2"> i działasz.</em>
+      </h2>
+
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-n">01</div>
+          <div>
+            <h4 data-i="step1.h">Wybierasz plan</h4>
+            <p data-i="step1.p">Klikasz „Zamów" przy planie obok albo w pełnym cenniku. Możesz też skonfigurować własnego VPS-a w konfiguratorze na stronie głównej.</p>
+            <span class="mark" data-i="step1.m">~ 30 SEKUND</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">02</div>
+          <div>
+            <h4 data-i="step2.h">Płatność przez Stripe albo Revolut Pro</h4>
+            <p data-i="step2.p">Przekierowuję Cię na bezpieczną stronę operatora płatności. Karty Visa, Mastercard, AmEx, Apple Pay, Google Pay, BLIK i Przelewy24 — wybór zależy od operatora. Stripe sam tworzy Customer + wystawia rachunek bez VAT.</p>
+            <span class="mark" data-i="step2.m">~ 15 SEKUND</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">03</div>
+          <div>
+            <h4 data-i="step3.h">Konto + VPS tworzą się automatycznie</h4>
+            <p data-i="step3.p">Webhook ze Stripe / Revoluta uderza w moje API → maszyna na Contabo startuje → otrzymujesz mail z adresem IP, kluczem SSH i linkiem do panelu rozliczeń Stripe (gdzie zarządzasz fakturami i subskrypcją).</p>
+            <span class="mark" data-i="step3.m">~ 47 SEKUND</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-n">04</div>
+          <div>
+            <h4 data-i="step4.h">Logujesz się magic linkiem</h4>
+            <p data-i="step4.p">Brak hasła do zapamiętania. Każdy login = wpisanie maila → klik w link → jesteś w panelu. Wszystkie kolejne faktury i historię płatności masz tam dostępne 24/7. <a href="logowanie.html" style="color:var(--accent); border-bottom:1.5px solid var(--accent); padding-bottom:1px; font-weight:600">Zobacz, jak wygląda logowanie →</a></p>
+            <span class="mark" data-i="step4.m">~ 10 SEKUND</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT — Featured plans + buy buttons -->
+    <div>
+      <div class="section-num" data-i="plans.num">POPULARNE PLANY</div>
+      <h2 class="section-title" style="margin:14px 0 22px; font-size:48px">
+        <span data-i="plans.t1">Trzy najczęściej</span><em data-i="plans.t2"> wybierane.</em>
+      </h2>
+
+      <div class="plans-mini" id="plans-mini" data-locked="true">
+
+        <div class="plan-mini">
+          <div class="pm-name">
+            <b>Mały</b>
+            <span>2 vCPU · 4 GB · 60 GB NVMe</span>
+          </div>
+          <div class="pm-price">
+            <span class="cur">€</span>9<span class="per">/ mies.</span>
+          </div>
+          <!-- Replace href with your Stripe Payment Link, e.g. https://buy.stripe.com/aEU8wQabc -->
+          <a href="https://buy.stripe.com/REPLACE_WITH_STRIPE_LINK_SMALL"
+             class="btn pm-cta"
+             target="_blank" rel="noopener"
+             data-i="plans.cta">Zamów →</a>
+        </div>
+
+        <div class="plan-mini featured">
+          <div class="pm-name">
+            <b>Średni</b>
+            <span><span style="color:var(--accent); font-weight:700">POLECANY</span> · 4 vCPU · 8 GB · 120 GB NVMe</span>
+          </div>
+          <div class="pm-price">
+            <span class="cur" style="color:var(--accent)">€</span><span style="color:var(--accent)">19</span><span class="per">/ mies.</span>
+          </div>
+          <a href="https://buy.stripe.com/REPLACE_WITH_STRIPE_LINK_MEDIUM"
+             class="btn btn-primary pm-cta"
+             target="_blank" rel="noopener"
+             data-i="plans.cta">Zamów →</a>
+        </div>
+
+        <div class="plan-mini">
+          <div class="pm-name">
+            <b>Duży</b>
+            <span>6 vCPU · 16 GB · 240 GB NVMe</span>
+          </div>
+          <div class="pm-price">
+            <span class="cur">€</span>39<span class="per">/ mies.</span>
+          </div>
+          <a href="https://buy.stripe.com/REPLACE_WITH_STRIPE_LINK_LARGE"
+             class="btn pm-cta"
+             target="_blank" rel="noopener"
+             data-i="plans.cta">Zamów →</a>
+        </div>
+
+      </div>
+
+      <!-- CONSENT BLOCK — visible UNDER the plans, gates the order buttons -->
+      <div class="consent-block" id="consent-block">
+        <h5 data-i="consent.h">◆ WYMAGANE ZGODY PRZED ZAMÓWIENIEM</h5>
+
+        <label class="field-check">
+          <input type="checkbox" class="js-consent" id="consent-tos" />
+          <span>
+            <span data-i="consent.tos.1">Akceptuję</span>
+            <a href="regulamin.html" data-i="consent.tos.2">Regulamin świadczenia usług</a>
+            <span data-i="consent.tos.3">oraz</span>
+            <a href="polityka-prywatnosci.html" data-i="consent.tos.4">Politykę prywatności</a>.<span class="req">*</span>
+          </span>
+        </label>
+
+        <label class="field-check">
+          <input type="checkbox" class="js-consent" id="consent-immediate" />
+          <span data-i="consent.imm">
+            Wyrażam zgodę na rozpoczęcie świadczenia usługi przed upływem 14-dniowego terminu odstąpienia od umowy i przyjmuję do wiadomości, że <strong>tracę prawo do odstąpienia po pełnym wykonaniu usługi</strong> (art. 38 pkt 1 ustawy o prawach konsumenta). W zamian otrzymuję 30-dniową gwarancję zwrotu pieniędzy z dobrej woli Sprzedawcy.<span class="req">*</span>
+          </span>
+        </label>
+
+        <p style="margin:6px 0 0; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em" id="consent-status" data-i="consent.status">
+          ✗ Zaznacz obie zgody, żeby aktywować przyciski zamówienia.
+        </p>
+      </div>
+
+      <p style="margin:18px 0 0; text-align:right">
+        <a href="index.html#pricing" id="link-allplans" data-locked="true" style="font-family:'JetBrains Mono', monospace; font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); border-bottom:1.5px solid var(--accent); padding-bottom:1px; font-weight:700" data-i="plans.more">Zobacz wszystkie 6 planów →</a>
+      </p>
+
+      <!-- Payment logos -->
+      <div class="pay-logos">
+        <span class="lbl" data-i="pay.lbl">PŁATNOŚCI OBSŁUGUJE</span>
+        <div class="row">
+          <span class="pay-badge">STRIPE</span>
+          <span class="pay-badge">REVOLUT PRO</span>
+        </div>
+      </div>
+      <div class="pay-logos" style="border-top:0; padding-top:8px">
+        <span class="lbl" data-i="pay.cards">AKCEPTOWANE KARTY</span>
+        <div class="row">
+          <span class="pay-badge">VISA</span>
+          <span class="pay-badge">MASTERCARD</span>
+          <span class="pay-badge">AMEX</span>
+          <span class="pay-badge">APPLE PAY</span>
+          <span class="pay-badge">GOOGLE PAY</span>
+          <span class="pay-badge">BLIK</span>
+          <span class="pay-badge">P24</span>
+        </div>
+      </div>
+
+      <!-- Note about consent + refunds -->
+      <div class="signup-note">
+        <h5 data-i="note.h">◆ 30-DNIOWA GWARANCJA ZWROTU</h5>
+        <p data-i="note.p">
+          Niezależnie od ustawowego prawa odstąpienia, każdemu Klientowi z dobrej woli oferuję <strong>zwrot 100% opłaty w ciągu 30 dni od zakupu</strong>, bez podawania przyczyny. Wystarczy email na <a href="mailto:info@vps4u.xyz" rel="nofollow" style="color:var(--ink); border-bottom:1.5px solid var(--ink); padding-bottom:1px; font-weight:700">info@vps4u.xyz</a>. Zwrot realizowany jest tą samą drogą, jaką dokonano płatności, w ciągu 14 dni roboczych.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- BOTTOM CTA STRIP -->
+<section class="cta-strip">
+  <div class="wrap ctas-row">
+    <h2 class="ctas-h">
+      <span data-i="bot.t1">Wolisz najpierw</span> <em data-i="bot.t2">poskładać własną konfigurację?</em>
+    </h2>
+    <div style="display:flex; flex-direction:column; gap:14px; align-items:flex-start">
+      <p style="margin:0; font-family:'JetBrains Mono', monospace; font-size:13px; color:#a8a299; text-transform:uppercase; letter-spacing:.08em" data-i="bot.s">Slidery CPU/RAM/dysk, lokalizacja, dodatki — cena live.</p>
+      <a href="index.html#config" class="btn btn-primary btn-lg" data-i="bot.cta">Otwórz konfigurator →</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <div class="logo" style="font-size:24px">
+          <span class="badge">v4</span>
+          <span>VPS4U<span style="color:var(--accent)">.</span>xyz</span>
+        </div>
+        <p style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; max-width:280px; margin-top:18px; line-height:1.6" data-i="foot.tag">VPS DLA LUDZI, KTÓRZY LUBIĄ MIEĆ KONTROLĘ.</p>
+      </div>
+      <div>
+        <h5>VPS</h5>
+        <ul>
+          <li><a href="index.html#config" data-i="foot.c1.0">Konfigurator</a></li>
+          <li><a href="index.html#pricing" data-i="foot.c1.1">Cennik</a></li>
+          <li><a href="index.html#config" data-i="foot.c1.2">Lokalizacje</a></li>
+          <li><a href="index.html#panel" data-i="foot.c1.3">Status systemów</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 data-i="foot.h2">USŁUGI</h5>
+        <ul>
+          <li><a href="index.html#services" data-i="foot.c2.0">WordPress Hosting</a></li>
+          <li><a href="index.html#services" data-i="foot.c2.1">Serwery gier</a></li>
+          <li><a href="index.html#services" data-i="foot.c2.2">Domeny</a></li>
+          <li><a href="index.html#services" data-i="foot.c2.3">SSL</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 data-i="foot.h3">ZASOBY</h5>
+        <ul>
+          <li><a href="index.html#blog" data-i="foot.c3.0">Blog</a></li>
+          <li><a href="index.html#blog" data-i="foot.c3.1">Poradniki</a></li>
+          <li><a href="index.html#blog" data-i="foot.c3.2">Postmortemy</a></li>
+          <li><a href="index.html#panel" data-i="foot.c3.3">Status</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 data-i="foot.h4">FIRMA</h5>
+        <ul>
+          <li><a href="o-mnie.html" data-i="foot.c4.0">O mnie</a></li>
+          <li><a href="mailto:info@vps4u.xyz" rel="nofollow" data-i="foot.c4.1">Kontakt</a></li>
+          <li><a href="regulamin.html" data-i="foot.c4.2">Regulamin</a></li>
+          <li><a href="polityka-prywatnosci.html" data-i="foot.c4.3">Polityka prywatności</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="giant-logo">VPS<em>4</em>U<span style="color:var(--accent)">.</span>xyz</div>
+    <div class="footer-bottom">
+      <span>© 2024–2026 VPS4U.xyz</span>
+      <span>BYTOM · INFRA: CONTABO DE / USA / SG</span>
+      <span>v4.0.2 — STATUS: ●ALL SYSTEMS GO</span>
+    </div>
+  </div>
+</footer>
+
+<script src="subpage-i18n.js"></script>
+<script src="subpage-glue.js"></script>
+<script src="cookie-banner.js"></script>
+<script>
+// Consent gating — disable Stripe order buttons until both checkboxes are ticked.
+(function() {
+  const boxes = document.querySelectorAll('.js-consent');
+  const block = document.getElementById('plans-mini');
+  const status = document.getElementById('consent-status');
+  const planButtons = block ? block.querySelectorAll('a.btn') : [];
+  const STATUS_OFF = '✗ Zaznacz obie zgody, żeby aktywować przyciski zamówienia.';
+  const STATUS_ON  = '✓ Zgody zaakceptowane — możesz zamawiać.';
+
+  function sync() {
+    const all = [...boxes].every(b => b.checked);
+    planButtons.forEach(a => {
+      if (all) {
+        a.dataset.href = a.dataset.href || a.getAttribute('href');
+        a.setAttribute('href', a.dataset.href);
+        a.style.opacity = '';
+        a.style.pointerEvents = '';
+        a.removeAttribute('aria-disabled');
+        a.removeAttribute('tabindex');
+      } else {
+        a.dataset.href = a.dataset.href || a.getAttribute('href');
+        a.setAttribute('href', 'javascript:void(0)');
+        a.style.opacity = '0.45';
+        a.style.pointerEvents = 'auto';
+        a.setAttribute('aria-disabled', 'true');
+        a.setAttribute('tabindex', '-1');
+        a.onclick = (e) => { e.preventDefault(); document.getElementById('consent-block').scrollIntoView({behavior:'smooth', block:'center'}); status.style.color = 'var(--accent)'; setTimeout(()=>{ status.style.color=''; }, 1800); };
+      }
+    });
+    if (status) status.textContent = all ? STATUS_ON : STATUS_OFF;
+    if (status) status.style.color = all ? 'var(--ok)' : '';
+  }
+  boxes.forEach(b => b.addEventListener('change', sync));
+  sync();
+})();
+</script>
+</body>
+</html>

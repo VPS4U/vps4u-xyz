@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Logowanie · VPS4U.xyz</title>
+<meta name="description" content="Logowanie do panelu rozliczeń VPS4U.xyz — magic link wysyłany na email, faktury i subskrypcje w Stripe Customer Portal." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="subpages.css" />
+</head>
+<body data-page="login">
+
+<div class="ticker">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
+<nav class="nav">
+  <div class="wrap nav-row">
+    <a href="index.html" class="logo">
+      <span class="badge">v4</span>
+      <span>VPS4U<span style="color:var(--accent)">.</span>xyz</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html#config" data-i="nav.vps">VPS</a>
+      <a href="index.html#services" data-i="nav.services">Usługi</a>
+      <a href="index.html#pricing" data-i="nav.pricing">Cennik</a>
+      <a href="o-mnie.html" data-i="nav.about">O mnie</a>
+      <a href="index.html#blog" data-i="nav.blog">Blog</a>
+    </div>
+    <div class="nav-right">
+      <div class="lang">
+        <button id="lang-pl" class="active">PL</button>
+        <button id="lang-en">EN</button>
+      </div>
+      <a href="logowanie.html" class="btn" style="padding:8px 14px; font-size:13px; background:var(--ink); color:var(--cream)" data-i="nav.login">Logowanie</a>
+      <a href="rejestracja.html" class="btn btn-primary" style="padding:8px 14px; font-size:13px" data-i="nav.signup">Załóż konto</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+<div class="auth-shell">
+
+  <!-- LEFT BRAND PANEL -->
+  <aside class="auth-side">
+    <span class="eyebrow"><span class="dot" style="background:var(--accent); box-shadow:0 0 0 3px rgba(239,74,20,.3); width:6px; height:6px; border-radius:50%; display:inline-block; margin-right:8px"></span><span data-i="side.eb">PANEL ROZLICZEŃ · STRIPE</span></span>
+
+    <div>
+      <h2>
+        <span data-i="side.t1">Logowanie</span>
+        <em data-i="side.t2"> bez hasła.</em>
+      </h2>
+      <p class="auth-lede" data-i="side.lede">Wpisujesz email — wysyłam Ci link logowania. Klikasz w mailu — lądujesz w panelu rozliczeń Stripe, gdzie zarządzasz fakturami, subskrypcjami i danymi karty. Bezpieczniej niż jakiekolwiek hasło.</p>
+
+      <ul class="auth-bullets">
+        <li data-i="side.b1">Brak haseł = brak wycieków haseł</li>
+        <li data-i="side.b2">Faktury i rachunki w PDF, pełna historia płatności</li>
+        <li data-i="side.b3">Anulowanie albo zmiana planu jednym kliknięciem</li>
+        <li data-i="side.b4">Aktualizacja danych karty bez kontaktu ze mną</li>
+      </ul>
+
+      <div class="auth-quote">
+        <blockquote data-i="side.q">„Faktury mam w panelu Stripe — nie muszę prosić nikogo o dokument. Działa jak w bankach."</blockquote>
+        <cite data-i="side.qa">— JOANNA M. · DEVOPS</cite>
+      </div>
+    </div>
+
+    <div class="auth-meta-row">
+      <div>
+        <span class="v">~30s</span>
+        <span class="l" data-i="side.m1">Czas dostarczenia linku</span>
+      </div>
+      <div>
+        <span class="v">10min</span>
+        <span class="l" data-i="side.m2">Ważność magic linku</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT FORM -->
+  <section class="auth-main">
+    <div class="auth-card">
+      <h1>
+        <span data-i="form.t1">Logowanie</span> <em data-i="form.t2">magic linkiem.</em>
+      </h1>
+      <p class="auth-sub" data-i="form.sub">Nie kupiłeś jeszcze VPS-a? <a href="rejestracja.html">Zobacz cennik →</a></p>
+
+      <form id="login-form" onsubmit="event.preventDefault(); var c=this.closest('.auth-card'); c.querySelector('.login-form-row').style.display='none'; c.querySelector('.login-success').style.display='flex';">
+
+        <div class="login-form-row">
+          <div class="field">
+            <label for="email" data-i="form.email">EMAIL UŻYTY PRZY ZAKUPIE</label>
+            <input type="email" id="email" name="email" placeholder="anna@example.com" autocomplete="email" required />
+          </div>
+
+          <button type="submit" class="btn btn-primary auth-submit">
+            <span data-i="form.submit">Wyślij mi link logowania</span>
+            <span>→</span>
+          </button>
+
+          <p style="margin:20px 0 0; font-size:13px; color:var(--ink-2); line-height:1.6" data-i="form.how">
+            <strong>Jak to działa:</strong> wpisz adres, na który kupowałeś VPS — wyślę jednorazowy link logowania. Klikasz w mailu i lądujesz w panelu rozliczeń Stripe (faktury, subskrypcje, dane karty). Link ważny 10 minut.
+          </p>
+
+          <p style="margin:12px 0 0; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; line-height:1.6" data-i="form.note">
+            // Brak hasła = brak wycieków. Każde logowanie wymaga kliknięcia w świeży link wysłany na Twój email.
+          </p>
+        </div>
+
+        <div class="login-success" style="display:none; flex-direction:column; gap:14px; padding:24px; border:1.5px solid var(--ok); background:rgba(31,122,58,.08)">
+          <div style="display:flex; align-items:center; gap:12px">
+            <div style="width:32px; height:32px; background:var(--ok); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:18px">✓</div>
+            <strong style="font-family:'Archivo Black', sans-serif; font-size:20px; letter-spacing:-0.02em" data-i="form.ok.t">Sprawdź skrzynkę.</strong>
+          </div>
+          <p style="margin:0; font-size:14px; color:var(--ink-2); line-height:1.5" data-i="form.ok.p">Jeśli ten email jest powiązany z aktywnym kontem, wysłałem na niego link logowania do Stripe Customer Portal. Sprawdź też folder Spam.</p>
+          <p style="margin:0; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em">// Nie ma maila po 5 min? Napisz na <a href="mailto:info@vps4u.xyz" style="color:var(--accent); border-bottom:1.5px solid var(--accent); padding-bottom:1px">info@vps4u.xyz</a></p>
+        </div>
+      </form>
+
+      <div class="auth-foot">
+        <span class="lock" data-i="foot.lock">SZYFROWANE TLS 1.3</span>
+        <span data-i="foot.region">PANEL ROZLICZEŃ: STRIPE · EU</span>
+      </div>
+    </div>
+  </section>
+</div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <div class="logo" style="font-size:24px">
+          <span class="badge">v4</span>
+          <span>VPS4U<span style="color:var(--accent)">.</span>xyz</span>
+        </div>
+        <p style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; max-width:280px; margin-top:18px; line-height:1.6" data-i="foot.tag">VPS DLA LUDZI, KTÓRZY LUBIĄ MIEĆ KONTROLĘ.</p>
+      </div>
+      <div>
+        <h5>VPS</h5>
+        <ul>
+          <li><a href="index.html#config" data-i="foot.c1.0">Konfigurator</a></li>
+          <li><a href="index.html#pricing" data-i="foot.c1.1">Cennik</a></li>
+          <li><a href="index.html#config" data-i="foot.c1.2">Lokalizacje</a></li>
+          <li><a href="index.html#panel" data-i="foot.c1.3">Status systemów</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 data-i="foot.h2">USŁUGI</h5>
+        <ul>
+          <li><a href="index.html#services" data-i="foot.c2.0">WordPress Hosting</a></li>
+          <li><a href="index.html#services" data-i="foot.c2.1">Serwery gier</a></li>
+          <li><a href="index.html#services" data-i="foot.c2.2">Domeny</a></li>
+          <li><a href="index.html#services" data-i="foot.c2.3">SSL</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 data-i="foot.h3">ZASOBY</h5>
+        <ul>
+          <li><a href="index.html#blog" data-i="foot.c3.0">Blog</a></li>
+          <li><a href="index.html#blog" data-i="foot.c3.1">Poradniki</a></li>
+          <li><a href="index.html#blog" data-i="foot.c3.2">Postmortemy</a></li>
+          <li><a href="index.html#panel" data-i="foot.c3.3">Status</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 data-i="foot.h4">FIRMA</h5>
+        <ul>
+          <li><a href="o-mnie.html" data-i="foot.c4.0">O mnie</a></li>
+          <li><a href="mailto:info@vps4u.xyz" rel="nofollow" data-i="foot.c4.1">Kontakt</a></li>
+          <li><a href="regulamin.html" data-i="foot.c4.2">Regulamin</a></li>
+          <li><a href="polityka-prywatnosci.html" data-i="foot.c4.3">Polityka prywatności</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="giant-logo">VPS<em>4</em>U<span style="color:var(--accent)">.</span>xyz</div>
+    <div class="footer-bottom">
+      <span>© 2024–2026 VPS4U.xyz</span>
+      <span>BYTOM · INFRA: CONTABO DE / USA / SG</span>
+      <span>v4.0.2 — STATUS: ●ALL SYSTEMS GO</span>
+    </div>
+  </div>
+</footer>
+
+<script src="subpage-i18n.js"></script>
+<script src="subpage-glue.js"></script>
+<script src="cookie-banner.js"></script>
+</body>
+</html>

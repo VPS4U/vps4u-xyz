@@ -1,0 +1,24 @@
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Node / build cache (in case we add tooling later)
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
+
+# Local secrets (NEVER commit FTP creds)
+.env
+.env.local
+*.local
+
+# OS thumbnail caches
+ehthumbs.db
+desktop.ini
+.claude/

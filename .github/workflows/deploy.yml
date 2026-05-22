@@ -1,0 +1,49 @@
+name: Deploy to Hostinger via FTP
+
+on:
+  push:
+    branches:
+      - main          # change to "master" if your default branch is named that
+  workflow_dispatch:  # also lets you trigger manually from the Actions tab
+
+jobs:
+  deploy:
+    name: Sync to Hostinger
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🚀 Sync files to Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          # FTP credentials — set these in GitHub repo → Settings → Secrets and variables → Actions
+          # FTP_SERVER:   your-hostname.hostinger.com  (or the IP shown in hPanel → FTP Accounts)
+          # FTP_USERNAME: u123456789                   (FTP username from hPanel)
+          # FTP_PASSWORD: <your-ftp-password>          (FTP password from hPanel)
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+
+          # Destination on the Hostinger server.
+          # For a primary domain this is usually /public_html/
+          # For an addon domain it might be /domains/vps4u.xyz/public_html/
+          server-dir: /public_html/
+
+          # What NOT to upload (we don't need .git, the workflow itself, or docs)
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/.gitignore
+            **/.DS_Store
+            **/README.md
+            **/node_modules/**
+
+          # Use FTPS (TLS-encrypted) — Hostinger supports it
+          protocol: ftps
+          port: 21
+
+          # Show a clean log
+          log-level: standard

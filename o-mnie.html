@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>O nas — Karol Balikiewicz & Wojciech Maciejewski · VPS4U.xyz</title>
+<meta name="description" content="VPS4U.xyz prowadzi Karol Balikiewicz z Bytomia razem z co-founderem Wojciechem Maciejewskim. Zespół dwóch ludzi, bez handlowców, bez call center." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="subpages.css" />
+<style>
+.team-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:0;
+  border:1.5px solid var(--ink); box-shadow:8px 8px 0 var(--ink);
+  margin-bottom:60px;
+}
+.team-card{
+  padding:32px 30px;
+  background:var(--cream);
+  display:flex; flex-direction:column; gap:18px;
+}
+.team-card.lead{
+  background:var(--ink); color:var(--cream);
+  border-right:1.5px solid var(--ink);
+}
+.team-card.lead h3, .team-card.lead .tc-name{color:#fff}
+.team-card.lead .tc-role{color:var(--accent)}
+.team-card.lead .tc-bio{color:#c4bfa9}
+.team-card.lead .tc-handle{color:#8a8578}
+.tc-head{
+  display:flex; align-items:center; gap:18px;
+}
+.tc-avatar{
+  width:64px; height:64px; flex-shrink:0;
+  background:var(--accent); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Archivo Black', sans-serif; font-size:26px;
+  letter-spacing:-0.02em;
+  transform:rotate(-4deg);
+}
+.team-card.lead .tc-avatar{background:var(--accent); color:#fff}
+.team-card:not(.lead) .tc-avatar{background:var(--ink); color:var(--accent)}
+.tc-name{
+  font-family:'Archivo Black', sans-serif;
+  font-size:24px; line-height:1; letter-spacing:-0.02em;
+  margin:0;
+}
+.tc-role{
+  display:block; margin-top:4px;
+  font-family:'JetBrains Mono', monospace; font-size:11px;
+  text-transform:uppercase; letter-spacing:.12em;
+  color:var(--accent);
+}
+.tc-bio{
+  font-size:15px; line-height:1.55; color:var(--ink-2);
+  margin:0;
+}
+.tc-bio strong{color:var(--ink)}
+.team-card.lead .tc-bio strong{color:#fff}
+.tc-meta{
+  display:flex; flex-wrap:wrap; gap:18px;
+  font-family:'JetBrains Mono', monospace; font-size:11px;
+  text-transform:uppercase; letter-spacing:.08em;
+  color:var(--muted);
+  margin-top:auto; padding-top:14px;
+  border-top:1px dashed var(--rule);
+}
+.team-card.lead .tc-meta{border-top-color:#2a2823}
+.tc-handle{font-weight:700; color:var(--ink)}
+.team-card.lead .tc-handle{color:var(--accent)}
+.tc-pill{
+  align-self:flex-start;
+  font-family:'JetBrains Mono', monospace; font-size:10px;
+  background:var(--cream); color:var(--ink); padding:5px 9px;
+  text-transform:uppercase; letter-spacing:.12em; font-weight:700;
+}
+.team-card:not(.lead) .tc-pill{background:var(--ink); color:var(--accent)}
+@media (max-width:760px){
+  .team-grid{grid-template-columns:1fr}
+  .team-card.lead{border-right:0; border-bottom:1.5px solid var(--ink)}
+}
+</style>
+</head>
+<body data-page="about">
+
+<div class="ticker">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
+<nav class="nav">
+  <div class="wrap nav-row">
+    <a href="index.html" class="logo">
+      <span class="badge">v4</span>
+      <span>VPS4U<span style="color:var(--accent)">.</span>xyz</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html#config" data-i="nav.vps">VPS</a>
+      <a href="index.html#services" data-i="nav.services">Usługi</a>
+      <a href="index.html#pricing" data-i="nav.pricing">Cennik</a>
+      <a href="o-mnie.html" style="color:var(--accent)" data-i="nav.about">O nas</a>
+      <a href="index.html#blog" data-i="nav.blog">Blog</a>
+    </div>
+    <div class="nav-right">
+      <div class="lang">
+        <button id="lang-pl" class="active">PL</button>
+        <button id="lang-en">EN</button>
+      </div>
+      <a href="logowanie.html" class="btn" style="padding:8px 14px; font-size:13px" data-i="nav.login">Logowanie</a>
+      <a href="rejestracja.html" class="btn btn-primary" style="padding:8px 14px; font-size:13px" data-i="nav.signup">Załóż konto</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<section class="subpage-hero wrap">
+  <div class="subpage-eyebrow" data-i="hero.eb">EST. 2024 — BYTOM & ŚWINOUJŚCIE</div>
+  <h1 class="subpage-h1">
+    <span data-i="hero.t1">Dwóch ludzi,</span>
+    <em data-i="hero.t2"> jedno postanowienie:</em><br/>
+    <span data-i="hero.t3">VPS bez bzdur.</span>
+  </h1>
+  <p class="section-lede" data-i="hero.lede" style="max-width:760px; font-size:19px; margin-top:14px">
+    Karol prowadzi codzienną robotę z Bytomia. Wojtek pomógł wszystko postawić ze Świnoujścia. Razem robimy hosting, który nie wymaga handlowca, panelu z 2009 ani trzech maili do księgowości.
+  </p>
+</section>
+
+<!-- TEAM -->
+<section class="wrap" style="padding:24px 0 32px">
+
+  <div class="team-grid">
+
+    <!-- KAROL — operating partner -->
+    <div class="team-card lead">
+      <span class="tc-pill" data-i="t1.pill">OPERATOR · CODZIENNA ROBOTA</span>
+      <div class="tc-head">
+        <div class="tc-avatar">KB</div>
+        <div>
+          <h3 class="tc-name">Karol Błażej Balikiewicz</h3>
+          <span class="tc-role" data-i="t1.role">SPRZEDAWCA · ADMINISTRATOR · SUPPORT</span>
+        </div>
+      </div>
+      <p class="tc-bio" data-i="t1.bio">
+        Cześć, jestem Karol. Mieszkam w Bytomiu. To do mnie trafiają Twoje maile, ja stawiam maszyny na Contabo, ja wystawiam rachunki na żądanie i odpisuję na tickety — zwykle tego samego dnia.
+      </p>
+      <p class="tc-bio" data-i="t1.bio2">
+        Z VPS-ami siedzę od czasów, kiedy „cloud" znaczyło „czyjś komputer". W codziennej robocie cenię cisze: <strong>mniej przycisków w panelu, mniej maili od księgowej, mniej powodów, żeby do mnie pisać</strong>. Jak coś działa, to działa.
+      </p>
+      <div class="tc-meta">
+        <span class="tc-handle">BYTOM 🇵🇱</span>
+        <span>· DZIAŁALNOŚĆ NIEREJESTROWANA</span>
+        <span>· KONTAKT: info@vps4u.xyz</span>
+      </div>
+    </div>
+
+    <!-- WOJTEK — co-founder -->
+    <div class="team-card">
+      <span class="tc-pill" data-i="t2.pill">CO-FOUNDER · INFRA & PRODUKT</span>
+      <div class="tc-head">
+        <div class="tc-avatar">WM</div>
+        <div>
+          <h3 class="tc-name">Wojciech Maciejewski</h3>
+          <span class="tc-role" data-i="t2.role">CO-FOUNDER · ARCHITEKTURA · BLOG</span>
+        </div>
+      </div>
+      <p class="tc-bio" data-i="t2.bio">
+        Hej, jestem Wojtek. Mieszkam w Świnoujściu. Razem z Karolem zaczęliśmy VPS4U.xyz w 2024 r. Ja postawiłem panel od zera, ogarnąłem integrację z Contabo i Stripe, i piszę większość poradników na blogu.
+      </p>
+      <p class="tc-bio" data-i="t2.bio2">
+        Na co dzień pracuję w roli DevOps gdzie indziej, dlatego operacyjnie prowadzi to Karol — ja pomagam przy infrastrukturze, decyzjach architektonicznych i kiedy trzeba ratować coś o trzeciej nad ranem.
+      </p>
+      <div class="tc-meta">
+        <span class="tc-handle">ŚWINOUJŚCIE 🇵🇱</span>
+        <span>· CO-FOUNDER</span>
+        <span>· GŁÓWNIE INFRA + BLOG</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STATS -->
+  <div class="about-stats">
+    <div class="about-stat">
+      <div class="v">2</div>
+      <div class="l" data-i="st.team">Osoby w zespole</div>
+    </div>
+    <div class="about-stat">
+      <div class="v">32</div>
+      <div class="l" data-i="st.clients">Aktywnych klientów</div>
+    </div>
+    <div class="about-stat">
+      <div class="v">~30<em>min</em></div>
+      <div class="l" data-i="st.reply">Czas odpowiedzi w godz. pracy</div>
+    </div>
+    <div class="about-stat">
+      <div class="v">0</div>
+      <div class="l" data-i="st.investors">Inwestorów. Tylko my dwóch.</div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="about-quote wrap">
+  <blockquote>
+    <span data-i="q.t1">Hosting nie powinien wymagać pełnoetatowego księgowego</span>
+    <em data-i="q.t2"> ani trzech maili do supportu, żeby zmienić rozmiar dysku.</em>
+    <span data-i="q.t3"> Powinien po prostu działać.</span>
+  </blockquote>
+  <cite data-i="q.c">— KAROL & WOJTEK · MANIFEST VPS4U</cite>
+</section>
+
+<!-- TIMELINE -->
+<section class="wrap" style="padding-bottom:80px">
+  <div class="section-num" data-i="tl.num">02 / OŚ CZASU</div>
+  <h2 class="section-title" style="margin-bottom:48px">
+    <span data-i="tl.t1">Od pomysłu w komunikatorze</span> <em data-i="tl.t2"> do działającego biznesu.</em>
+  </h2>
+  <div class="timeline">
+    <div class="tl-row">
+      <div class="tl-year">2023</div>
+      <div class="tl-body">
+        <h4 data-i="tl.23.h">Znajomi z forum</h4>
+        <p data-i="tl.23.p">Karol i Wojtek poznają się na polskim forum o samohostingu. Pierwszy wspólny projekt — testowy Mastodon na VPS-ie z Contabo, ze splitem rachunku po pół.</p>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-year">2024</div>
+      <div class="tl-body">
+        <h4 data-i="tl.24.h">Start VPS4U.xyz</h4>
+        <p data-i="tl.24.p">Wojtek pisze panel od zera w trzy miesiące. Karol zajmuje się onboardingiem klientów i supportem. Wystawiamy pierwszą wersję strony — pierwszy klient zarejestrował się tej samej nocy.</p>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-year">2025</div>
+      <div class="tl-body">
+        <h4 data-i="tl.25.h">Pierwsi obcy klienci</h4>
+        <p data-i="tl.25.p">Dodajemy kolejne lokalizacje Contabo (Niemcy, USA, Singapur). Pierwsze maile od ludzi, których nigdy nie poznaliśmy. Karol przechodzi na działalność nierejestrowaną — od teraz rachunki wystawia oficjalnie.</p>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-year">2026</div>
+      <div class="tl-body">
+        <h4 data-i="tl.26.h">Tu i teraz</h4>
+        <p data-i="tl.26.p">Kilkudziesięciu aktywnych klientów, pierwsze polecenia z ust do ust, Terraform provider w wersji beta. Karol odpisuje na tickety osobiście, Wojtek pisze blog i ratuje produkcję, gdy coś się dzieje w nocy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="wrap" style="padding-bottom:80px">
+  <div class="section-num" data-i="ct.num">03 / KONTAKT</div>
+  <h2 class="section-title" style="margin-bottom:24px">
+    <span data-i="ct.t1">Najszybsza droga</span> <em data-i="ct.t2"> do człowieka.</em>
+  </h2>
+  <p class="section-lede" data-i="ct.lede" style="max-width:680px">Mail leci na wspólną skrzynkę i odbiera go pierwszy z nas, kto jest przy komputerze — zwykle Karol. Większość odpowiedzi wraca tego samego dnia.</p>
+
+  <div class="contact-card">
+    <div class="contact-l">
+      <h3><span data-i="ct.c1">Dane</span> <em data-i="ct.c2">kontaktowe</em></h3>
+      <div class="contact-row">
+        <span class="l" data-i="ct.r1">Sprzedawca</span>
+        <span class="v">Karol Błażej Balikiewicz</span>
+      </div>
+      <div class="contact-row">
+        <span class="l" data-i="ct.r1b">Co-founder</span>
+        <span class="v">Wojciech Maciejewski</span>
+      </div>
+      <div class="contact-row">
+        <span class="l" data-i="ct.r2">Lokalizacje</span>
+        <span class="v">Bytom · Świnoujście 🇵🇱</span>
+      </div>
+      <div class="contact-row">
+        <span class="l" data-i="ct.r3">Email</span>
+        <span class="v">
+          <a class="js-mail" data-u="info" data-d="vps4u.xyz" href="mailto:info@vps4u.xyz" rel="nofollow">
+            <span class="email-fallback"><span aria-hidden="true">&#105;&#110;&#102;&#111;</span><span style="display:none">spamtrap-do-not-use</span><span aria-hidden="true"> &#91;at&#93; </span><span aria-hidden="true">&#118;&#112;&#115;&#52;&#117;.&#120;&#121;&#122;</span></span>
+          </a>
+        </span>
+        <span class="email-stat" data-i="ct.safe">SPAM-PROTECTED · ASSEMBLED IN BROWSER</span>
+      </div>
+      <div class="contact-row">
+        <span class="l" data-i="ct.r4">Godziny</span>
+        <span class="v" data-i="ct.r4v">Pon–Pt 9:00–18:00 · krytyczne awarie ASAP</span>
+      </div>
+    </div>
+    <div class="contact-r">
+      <h3><span data-i="ct.f1">Wsparcie</span> <em data-i="ct.f2">po ludzku</em></h3>
+      <div class="contact-row">
+        <span class="l" data-i="ct.fr1">Tickety w panelu</span>
+        <span class="v"><a href="logowanie.html">panel.vps4u.xyz</a></span>
+      </div>
+      <div class="contact-row">
+        <span class="l" data-i="ct.fr2">Status systemów</span>
+        <span class="v"><a href="index.html#panel">status.vps4u.xyz</a></span>
+      </div>
+      <div class="contact-row">
+        <span class="l" data-i="ct.fr3">Krytyczna awaria</span>
+        <span class="v"><a href="mailto:info@vps4u.xyz?subject=KRYTYCZNA%20AWARIA" rel="nofollow">info@vps4u.xyz · subject: AWARIA</a></span>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#a8a299; line-height:1.7; margin-top:18px; padding-top:18px; border-top:1px solid #2a2823">
+        <span data-i="ct.note1">// Odpowiedź w godz. pracy: ~30 min</span><br/>
+        <span data-i="ct.note2">// Język: PL / EN</span><br/>
+        <span style="color:var(--accent)" data-i="ct.note3">// Bez call center. Bez skryptów. Dwóch ludzi, jedna skrzynka.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-strip">
+  <div class="wrap ctas-row">
+    <h2 class="ctas-h">
+      <span data-i="cta.t1">Gotów na pierwszy</span> <em data-i="cta.t2"> VPS bez bzdur?</em>
+    </h2>
+    <div style="display:flex; flex-direction:column; gap:14px; align-items:flex-start">
+      <p style="margin:0; font-family:'JetBrains Mono', monospace; font-size:13px; color:#a8a299; text-transform:uppercase; letter-spacing:.08em" data-i="cta.s">Bez karty kredytowej. 30 dni gwarancji zwrotu.</p>
+      <div style="display:flex; gap:12px">
+        <a href="rejestracja.html" class="btn btn-primary btn-lg" data-i="cta.p">Zacznij teraz →</a>
+        <a href="mailto:info@vps4u.xyz" class="btn btn-lg" rel="nofollow" style="background:transparent; color:var(--cream); border-color:var(--cream)" data-i="cta.s2">Napisz do nas</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <div class="logo" style="font-size:24px">
+          <span class="badge">v4</span>
+          <span>VPS4U<span style="color:var(--accent)">.</span>xyz</span>
+        </div>
+        <p style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; max-width:280px; margin-top:18px; line-height:1.6" data-i="foot.tag">VPS DLA LUDZI, KTÓRZY LUBIĄ MIEĆ KONTROLĘ.</p>
+      </div>
+      <div>
+        <h5>VPS</h5>
+        <ul>
+          <li><a href="index.html#config" data-i="foot.c1.0">Konfigurator</a></li>
+          <li><a href="index.html#pricing" data-i="foot.c1.1">Cennik</a></li>
+          <li><a href="index.html#config" data-i="foot.c1.2">Lokalizacje</a></li>
+          <li><a href="index.html#panel" data-i="foot.c1.3">Status systemów</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 data-i="foot.h2">USŁUGI</h5>
+        <ul>
+          <li><a href="index.html#services" data-i="foot.c2.0">WordPress Hosting</a></li>
+          <li><a href="index.html#services" data-i="foot.c2.1">Serwery gier</a></li>
+          <li><a href="index.html#services" data-i="foot.c2.2">Domeny</a></li>
+          <li><a href="index.html#services" data-i="foot.c2.3">SSL</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 data-i="foot.h3">ZASOBY</h5>
+        <ul>
+          <li><a href="index.html#blog" data-i="foot.c3.0">Blog</a></li>
+          <li><a href="index.html#blog" data-i="foot.c3.1">Poradniki</a></li>
+          <li><a href="index.html#blog" data-i="foot.c3.2">Postmortemy</a></li>
+          <li><a href="index.html#panel" data-i="foot.c3.3">Status</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 data-i="foot.h4">FIRMA</h5>
+        <ul>
+          <li><a href="o-mnie.html" data-i="foot.c4.0">O nas</a></li>
+          <li><a href="mailto:info@vps4u.xyz" rel="nofollow" data-i="foot.c4.1">Kontakt</a></li>
+          <li><a href="regulamin.html" data-i="foot.c4.2">Regulamin</a></li>
+          <li><a href="polityka-prywatnosci.html" data-i="foot.c4.3">Polityka prywatności</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="giant-logo">VPS<em>4</em>U<span style="color:var(--accent)">.</span>xyz</div>
+    <div class="footer-bottom">
+      <span>© 2024–2026 VPS4U.xyz</span>
+      <span>BYTOM · INFRA: CONTABO DE / USA / SG</span>
+      <span>v4.0.2 — STATUS: ●ALL SYSTEMS GO</span>
+    </div>
+  </div>
+</footer>
+
+<script src="subpage-i18n.js"></script>
+<script src="subpage-glue.js"></script>
+<script src="cookie-banner.js"></script>
+</body>
+</html>
