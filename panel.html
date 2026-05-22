@@ -31,6 +31,7 @@
       <span>VPS4U<span style="color:var(--accent)">.</span>xyz</span>
     </a>
     <div class="nav-right">
+      <a id="admin-link" href="/admin" class="btn" style="display:none; padding:8px 14px; font-size:13px; background:var(--accent); color:var(--cream); margin-right:8px">Admin</a>
       <button id="logout-btn" class="btn" style="padding:8px 14px; font-size:13px; background:var(--ink); color:var(--cream)">Wyloguj</button>
     </div>
   </div>
@@ -95,13 +96,16 @@
   // Profil (RLS pozwoli czytać tylko własny)
   const { data: profile } = await supabase
     .from('profiles')
-    .select('stripe_customer_id, created_at')
+    .select('stripe_customer_id, created_at, is_admin')
     .eq('id', userId)
     .single();
 
   if (profile) {
     document.getElementById('account-stripe').textContent = profile.stripe_customer_id || '— (brak — opłać zamówienie, żeby się pojawiło)';
     document.getElementById('account-created').textContent = new Date(profile.created_at).toLocaleString('pl-PL');
+    if (profile.is_admin) {
+      document.getElementById('admin-link').style.display = 'inline-block';
+    }
   }
 
   // VPS-y

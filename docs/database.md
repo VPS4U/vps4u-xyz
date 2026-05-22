@@ -36,6 +36,7 @@ Plik źródłowy SQL: do skopiowania z [README.md](README.md) — będzie zarzą
 - `preferred_language text` — `'pl' | 'en'`
 - `tos_accepted_at timestamptz` — akceptacja regulaminu
 - `immediate_service_accepted_at timestamptz` — zgoda na rozpoczęcie usługi przed 14-dniowym prawem odstąpienia (RODO/sprzedaż konsumencka)
+- `is_admin boolean` (default false) — Stage 3; daje dostęp do `/admin` i wgląd we wszystkie tabele przez RLS policies "Admins read all *"
 
 **`public.subscriptions`** — aktywne i historyczne subskrypcje:
 - `id uuid` — PK
