@@ -48,6 +48,14 @@ JSX kompilowany jest **w przeglądarce** przez `@babel/standalone`. To znaczy:
 - Wada: spory boilerplate JS leci do klienta. Zaleta: prostota — edytujesz plik i działa
 - Jeśli kiedyś wąsko z performance — migracja do Vite/Next zajmie 1–2h, większość kodu zostanie
 
+### Backend helpery (`lib/*.js`)
+
+Czyste, testowalne moduły ES6 reused przez serverless functions. Każdy ma >85% pokrycia testowego (Vitest + MSW dla mock'ów zewnętrznych API).
+
+- **`lib/fx.js`** — `getEurPlnRate(date)` pobiera kurs średni NBP (tabela A) z fallbackiem na ostatnią dostępną dla weekendów/świąt; `convertEurCentsToPlnGrosze(cents, rate)` zaokrągla half-up
+- **`lib/brevo.js`** — `sendBrevoEmail({apiKey, to, subject, htmlContent, sender})`. Default sender `VPS4U <info@vps4u.xyz>`. API key zawsze przekazywany jako argument (nie sięga do `process.env`), żeby było testowalne
+- **`lib/supabase-admin.js`** — `createSupabaseAdmin({url, serviceKey})` zwraca klienta z `service_role` (omija RLS). Używany TYLKO po stronie serwerowej (webhook'i, cron'y)
+
 ### Backend (Vercel Serverless Functions)
 - **Folder**: `/api/` w repo
 - **Runtime**: Node.js 20.x (default Vercela)
