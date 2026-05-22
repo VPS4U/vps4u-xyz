@@ -4,6 +4,12 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #10] — 2026-05-22
+
+- Hotfix: usunięty legacy `export const config = { api: { bodyParser: false } }` z `api/stripe/webhook.js`
+- Konsekwencja: funkcja uruchamia się w trybie modern Web API (zgodnym z `request.text()` + `request.headers.get()`), zamiast trybu legacy Node `IncomingMessage` w którym `.headers.get()` nie istnieje
+- Test ręczny w produkcji: `POST /api/stripe/webhook` bez sygnatury zwraca teraz 400 (verify error) zamiast 500 (crash)
+
 ## [PR #9] — 2026-05-22
 
 - Stage 2: pierwszy backend endpoint + lokalna kopia płatności

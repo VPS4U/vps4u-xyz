@@ -18,12 +18,11 @@ import { createSupabaseAdmin } from '../../lib/supabase-admin.js';
 import { getEurPlnRate } from '../../lib/fx.js';
 import { processStripeEvent } from '../../lib/stripe-webhook.js';
 
-export const config = {
-  api: {
-    // Wyłącz parsowanie body — potrzebny raw text do weryfikacji sygnatury.
-    bodyParser: false,
-  },
-};
+// Modern Vercel Function — używa Web API `Request`.
+// `request.text()` zwraca raw body, idealne do weryfikacji sygnatury Stripe.
+// Legacy `export const config = { api: { bodyParser: false } }` tu NIE używamy
+// — to przełączyłoby funkcję w tryb Node `IncomingMessage`, w którym headers
+// nie ma metody `.get()`.
 
 export default async function handler(request) {
   if (request.method !== 'POST') {
