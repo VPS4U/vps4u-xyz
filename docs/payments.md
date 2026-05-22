@@ -4,11 +4,33 @@ Model: **subskrypcje miesięczne** przez Stripe Payment Links, automatyczny prov
 
 ## Stan obecny
 
-❌ **Nic nie działa.** Przyciski na `/rejestracja` mają placeholdery `REPLACE_WITH_STRIPE_LINK_*` (zob. `rejestracja.html:218,232,246` i `i18n.jsx:318–323`). Konto Stripe nie założone.
+- ✅ Konto Stripe założone (`acct_1TZJdQ3F9d3A69UD`), Test Mode aktywny
+- ✅ Stripe MCP autoryzowany dla setupu (czytanie produktów, search docs)
+- ✅ **Webhook endpoint zaimplementowany**: `api/stripe/webhook.js` (Vercel function) z weryfikacją sygnatury
+- ✅ **Lokalna tabela `payments`** w Supabase z FX conversion EUR→PLN (kurs NBP)
+- ❌ Produkty + Payment Links w Stripe — jeszcze nie utworzone
+- ❌ Webhook endpoint zarejestrowany w Stripe Dashboard — jeszcze nie podpięty (URL: `https://vps4u.xyz/api/stripe/webhook`)
+- ❌ Przyciski na `/rejestracja` mają placeholdery (`REPLACE_WITH_STRIPE_LINK_*`)
 
-## Plan implementacji
+## Implementacja webhooka
 
-### 1. Założenie konta Stripe (Twoje, jednorazowe)
+**Pliki:**
+- `lib/stripe-webhook.js` — czysta logika dispatch'a (dependency injection dla testowalności)
+- `api/stripe/webhook.js` — Vercel handler: signature verify + raw body + dependency wiring
+
+**Obsługiwane eventy:**
+- `checkout.session.completed` — link Stripe customer ID do istniejącego profilu Supabase po email
+- `invoice.payment_succeeded` / `charge.succeeded` — insert do `payments` z FX conversion
+
+**Idempotencja:** `unique(provider, external_charge_id)` — webhook retry nie tworzy duplikatów.
+
+**Walidacja walut:** akceptujemy tylko `eur` i `pln`. EUR przeliczane na PLN przez kurs średni NBP tabela A (lib/fx.js).
+
+## Konfiguracja po stronie Stripe (do zrobienia)
+
+## Plan implementacji (oryginalny — kroki pozostałe do zrobienia)
+
+### 1. ~~Założenie konta Stripe~~ ✅ ZROBIONE
 - Stripe → Sign up → wybierz **Polska** jako kraj firmy
 - Weryfikacja firmy (KRS/CEIDG, IBAN, dokument tożsamości) — Stripe może to weryfikować kilka dni
 - W trybie **Test mode** wszystko działa od razu, ale Payment Links produkcyjne wymagają aktywnego konta

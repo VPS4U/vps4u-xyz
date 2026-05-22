@@ -47,6 +47,23 @@ Plik źródłowy SQL: do skopiowania z [README.md](README.md) — będzie zarzą
 - `current_period_end timestamptz` — kiedy się odnawia
 - `cancel_at_period_end boolean` — flaga zaplanowanego anulowania
 
+**`public.payments`** — lokalna kopia każdej udanej wpłaty (provider-agnostic):
+- `id uuid` — PK
+- `provider text` — `stripe` lub `revolut`
+- `external_charge_id text` — ID transakcji u PSP
+- `unique(provider, external_charge_id)` — idempotencja webhooków
+- `user_id uuid` — FK do `profiles.id`
+- `subscription_id uuid` — FK do `subscriptions.id` (nullable, np. one-off charges)
+- `amount_cents bigint` — kwota w oryginalnej walucie
+- `currency text` — `eur` lub `pln`
+- `amount_pln_grosze bigint` — denormalizowane przeliczenie na PLN (po `fx_rate` z dnia płatności)
+- `fx_rate numeric(10,4)` — kurs EUR→PLN użyty (1.0 dla PLN→PLN)
+- `fx_source text` — `nbp_a` (tabela A NBP) lub `manual` lub `same` (gdy waluta = PLN)
+- `fx_table_date date` — data publikacji tabeli NBP (do audytu)
+- `charged_at timestamptz` — moment płatności u PSP
+- `quarter text` — ustawiane triggerem (`Q1-2026`, `Q2-2026`, ...) — indeksowane dla cap tracking
+- `created_at timestamptz`
+
 **`public.vps_instances`** — fizyczne VPS-y:
 - `id uuid` — PK
 - `subscription_id uuid` — FK
