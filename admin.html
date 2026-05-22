@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Admin · VPS4U.xyz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="subpages.css" />
+<style>
+  .admin-shell { max-width: 1100px; margin: 0 auto; padding: 48px 24px 96px; }
+  .admin-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1.5px solid var(--ink); }
+  .admin-head h1 { font-family: 'Archivo Black', sans-serif; font-size: 36px; letter-spacing: -0.02em; line-height: 1; margin: 0 0 8px; }
+  .admin-head .who { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--ink-2); text-transform: uppercase; letter-spacing: .06em; }
+  .admin-section { margin-top: 40px; }
+  .admin-section h2 { font-family: 'Archivo Black', sans-serif; font-size: 18px; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 14px; }
+  .quarter-card { border: 1.5px solid var(--ink); padding: 28px; background: var(--cream-2, #f5f0e6); }
+  .quarter-card .label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .quarter-card .value { font-family: 'Archivo Black', sans-serif; font-size: 48px; line-height: 1; margin: 12px 0; letter-spacing: -0.02em; }
+  .quarter-card .sub { font-size: 14px; color: var(--ink-2); }
+  .progress { height: 24px; background: var(--ink); position: relative; margin-top: 16px; }
+  .progress-bar { height: 100%; transition: width .3s ease, background .3s ease; }
+  .progress-bar.low { background: var(--ok, #1f7a3a); }
+  .progress-bar.med { background: #c98a00; }
+  .progress-bar.high { background: var(--accent, #ef4a14); }
+  .progress-label { position: absolute; top: 0; right: 8px; line-height: 24px; color: var(--cream); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  table.admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.admin-table th, table.admin-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--ink-2, #888); }
+  table.admin-table th { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  table.admin-table tr.current { background: rgba(239, 74, 20, 0.06); font-weight: 600; }
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .panel-empty { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; padding: 24px; border: 1.5px dashed var(--ink-2); text-align: center; }
+  .panel-loading { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); padding: 24px; text-align: center; }
+</style>
+</head>
+<body data-page="admin">
+
+<nav class="nav">
+  <div class="wrap nav-row">
+    <a href="index.html" class="logo">
+      <span class="badge">v4</span>
+      <span>VPS4U<span style="color:var(--accent)">.</span>xyz</span>
+    </a>
+    <div class="nav-right">
+      <a href="/panel" class="btn" style="padding:8px 14px; font-size:13px; background:var(--ink); color:var(--cream); margin-right:8px">Panel</a>
+      <button id="logout-btn" class="btn" style="padding:8px 14px; font-size:13px; background:var(--ink); color:var(--cream)">Wyloguj</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+<div class="admin-shell">
+
+  <div id="loading" class="panel-loading">// Sprawdzanie uprawnień…</div>
+
+  <div id="content" style="display:none">
+    <header class="admin-head">
+      <div>
+        <h1>Admin · cap quarterly</h1>
+        <p class="who">Zalogowany jako: <strong id="user-email">…</strong> (admin)</p>
+      </div>
+    </header>
+
+    <section class="admin-section">
+      <h2 id="current-quarter-label">Bieżący kwartał</h2>
+      <div class="quarter-card">
+        <div class="label">Suma wpłat / cap kwartalny</div>
+        <div class="value"><span id="current-total">…</span></div>
+        <div class="sub">
+          <span id="current-count">…</span> płatności ·
+          cap <span id="current-cap">…</span> ·
+          <strong><span id="current-pct">…</span>%</strong> wykorzystania
+        </div>
+        <div class="progress">
+          <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+          <span class="progress-label" id="progress-label">0%</span>
+        </div>
+        <p style="margin: 16px 0 0; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em">
+          // Cap na razie hardcoded w admin.html (50 000 PLN). Settings UI dochodzi w Stage 5.
+        </p>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <h2>Ostatnie 4 kwartały</h2>
+      <table class="admin-table" id="quarters-table">
+        <thead>
+          <tr>
+            <th>Kwartał</th>
+            <th>Liczba płatności</th>
+            <th>Suma (PLN)</th>
+          </tr>
+        </thead>
+        <tbody id="quarters-body"></tbody>
+      </table>
+    </section>
+
+    <section class="admin-section">
+      <h2>Ostatnie 20 płatności</h2>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Provider</th>
+            <th>Charge ID</th>
+            <th>Waluta</th>
+            <th>Kwota</th>
+            <th>PLN</th>
+            <th>Kurs</th>
+          </tr>
+        </thead>
+        <tbody id="payments-body"></tbody>
+      </table>
+      <div id="payments-empty" class="panel-empty" style="display:none">// Brak płatności. Pierwsza pojawi się tutaj po realnej wpłacie przez Stripe.</div>
+    </section>
+  </div>
+
+</div>
+</main>
+
+<script src="config.js"></script>
+<script src="cookie-banner.js"></script>
+<script type="module">
+  import { supabase } from '/lib/supabase.js';
+  import {
+    computeQuarterFromDate,
+    sumPaymentsPlnGrosze,
+    groupByQuarter,
+    formatPlnFromGrosze,
+  } from '/lib/admin-stats.js';
+
+  const loading = document.getElementById('loading');
+  const content = document.getElementById('content');
+
+  // Hardcoded cap kwartalny — settings UI dochodzi w Stage 5.
+  const QUARTERLY_CAP_GROSZE = 5_000_000; // 50 000 PLN
+
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
+    window.location.replace('/logowanie');
+    throw new Error('no session');
+  }
+
+  // Sprawdź czy user jest adminem (RLS i tak pilnuje, ale UX powinien być jasny).
+  const { data: profile, error: profileErr } = await supabase
+    .from('profiles')
+    .select('email, is_admin')
+    .eq('id', session.user.id)
+    .single();
+
+  if (profileErr || !profile?.is_admin) {
+    window.location.replace('/panel');
+    throw new Error('not admin');
+  }
+
+  document.getElementById('user-email').textContent = profile.email;
+
+  // Pobierz wszystkie płatności (RLS odda wszystko jeśli admin).
+  // Dla MVP ładujemy wszystko; w przyszłości paginacja jeśli ruch urośnie.
+  const { data: allPayments, error: paymentsErr } = await supabase
+    .from('payments')
+    .select('id, provider, external_charge_id, amount_cents, currency, amount_pln_grosze, fx_rate, charged_at, quarter')
+    .order('charged_at', { ascending: false });
+
+  if (paymentsErr) {
+    console.error('Nie udało się pobrać płatności:', paymentsErr);
+  }
+
+  const payments = allPayments ?? [];
+
+  // Bieżący kwartał
+  const currentQuarter = computeQuarterFromDate(new Date());
+  document.getElementById('current-quarter-label').textContent = `Bieżący kwartał — ${currentQuarter}`;
+  const currentPayments = payments.filter((p) => p.quarter === currentQuarter);
+  const currentTotal = sumPaymentsPlnGrosze(currentPayments);
+  const pct = QUARTERLY_CAP_GROSZE > 0 ? (currentTotal / QUARTERLY_CAP_GROSZE) * 100 : 0;
+
+  document.getElementById('current-total').textContent = formatPlnFromGrosze(currentTotal);
+  document.getElementById('current-count').textContent = currentPayments.length;
+  document.getElementById('current-cap').textContent = formatPlnFromGrosze(QUARTERLY_CAP_GROSZE);
+  document.getElementById('current-pct').textContent = pct.toFixed(1);
+
+  const bar = document.getElementById('progress-bar');
+  bar.style.width = `${Math.min(pct, 100)}%`;
+  bar.className = 'progress-bar ' + (pct < 50 ? 'low' : pct < 80 ? 'med' : 'high');
+  document.getElementById('progress-label').textContent = `${pct.toFixed(0)}%`;
+
+  // Ostatnie 4 kwartały
+  const groups = groupByQuarter(payments);
+  const quarterKeys = Object.keys(groups).sort().reverse().slice(0, 4);
+  const quartersBody = document.getElementById('quarters-body');
+  if (quarterKeys.length === 0) {
+    quartersBody.innerHTML = '<tr><td colspan="3" class="mono" style="color:var(--muted)">// brak danych</td></tr>';
+  } else {
+    quartersBody.innerHTML = quarterKeys
+      .map((q) => {
+        const row = groups[q];
+        const isCurrent = q === currentQuarter;
+        return `<tr class="${isCurrent ? 'current' : ''}">
+          <td class="mono">${q}</td>
+          <td>${row.count}</td>
+          <td>${formatPlnFromGrosze(row.total_pln_grosze)}</td>
+        </tr>`;
+      })
+      .join('');
+  }
+
+  // Ostatnie 20 płatności
+  const paymentsBody = document.getElementById('payments-body');
+  const paymentsEmpty = document.getElementById('payments-empty');
+  if (payments.length === 0) {
+    paymentsBody.parentElement.style.display = 'none';
+    paymentsEmpty.style.display = 'block';
+  } else {
+    paymentsBody.innerHTML = payments.slice(0, 20).map((p) => {
+      const date = new Date(p.charged_at).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' });
+      const originalAmount = (p.amount_cents / 100).toFixed(2);
+      return `<tr>
+        <td class="mono">${date}</td>
+        <td>${p.provider}</td>
+        <td class="mono" style="font-size:11px">${p.external_charge_id}</td>
+        <td>${p.currency.toUpperCase()}</td>
+        <td>${originalAmount}</td>
+        <td>${formatPlnFromGrosze(p.amount_pln_grosze)}</td>
+        <td class="mono">${p.fx_rate}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  loading.style.display = 'none';
+  content.style.display = 'block';
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/';
+  });
+</script>
+</body>
+</html>

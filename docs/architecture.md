@@ -55,6 +55,8 @@ Czyste, testowalne moduły ES6 reused przez serverless functions. Każdy ma >85%
 - **`lib/fx.js`** — `getEurPlnRate(date)` pobiera kurs średni NBP (tabela A) z fallbackiem na ostatnią dostępną dla weekendów/świąt; `convertEurCentsToPlnGrosze(cents, rate)` zaokrągla half-up
 - **`lib/brevo.js`** — `sendBrevoEmail({apiKey, to, subject, htmlContent, sender})`. Default sender `VPS4U <info@vps4u.xyz>`. API key zawsze przekazywany jako argument (nie sięga do `process.env`), żeby było testowalne
 - **`lib/supabase-admin.js`** — `createSupabaseAdmin({url, serviceKey})` zwraca klienta z `service_role` (omija RLS). Używany TYLKO po stronie serwerowej (webhook'i, cron'y)
+- **`lib/admin-stats.js`** — czyste helpery agregacji płatności do dashboardu admina: `computeQuarterFromDate`, `sumPaymentsPlnGrosze`, `groupByQuarter`, `formatPlnFromGrosze`
+- **`lib/stripe-webhook.js`** — `processStripeEvent(event, deps)` z dependency injection (ports & adapters); używany przez `api/stripe/webhook.js`
 
 ### Backend (Vercel Serverless Functions)
 - **Folder**: `/api/` w repo

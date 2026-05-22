@@ -4,6 +4,16 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #13] — 2026-05-22
+
+- Stage 3: rola adminowa + read-only dashboard `/admin`
+- Migracja 004 (`db/migrations/004_admin_role.sql`): kolumna `profiles.is_admin boolean`, RLS policies admin-read-all dla `profiles`, `subscriptions`, `vps_instances`, `payments`
+- Admin seeded ręcznie SQL'em (`update profiles set is_admin=true where email='vps4u.xyz@gmail.com'`)
+- `lib/admin-stats.js` — czyste helpery: `computeQuarterFromDate`, `sumPaymentsPlnGrosze`, `groupByQuarter`, `formatPlnFromGrosze` (Intl pl-PL z NBSP)
+- `admin.html` — read-only dashboard: bieżący kwartał (suma PLN, cap 50 000 hardcoded, % bar), historia 4 ostatnich kwartałów, ostatnie 20 płatności
+- `panel.html` — warunkowy link "Admin" w nav widoczny gdy `profile.is_admin=true`
+- 8 nowych testów (`tests/unit/admin-stats.test.js`) — wszystkie zielone; total 31 testów
+
 ## [PR #12] — 2026-05-22
 
 - Webhook tolerancja na nieobsługiwane waluty: zamiast `throw` → `console.warn` + skip
