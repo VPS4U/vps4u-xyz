@@ -5,9 +5,16 @@ Wewnętrzna dokumentacja projektu. Czytaj w tej kolejności, jeśli widzisz to p
 1. [architecture.md](architecture.md) — co stoi z czego i jak to gada
 2. [development.md](development.md) — jak pracujemy nad kodem
 3. [deployment.md](deployment.md) — jak strona trafia na produkcję
-4. [auth.md](auth.md) — logowanie magic-linkiem (Supabase)
-5. [payments.md](payments.md) — Stripe + provisioning VPS-ów
-6. [database.md](database.md) — schemat Postgres + Row Level Security
+4. [qa.md](qa.md) — strategia QA, TDD, gating w CI
+5. [auth.md](auth.md) — logowanie magic-linkiem (Supabase)
+6. [payments.md](payments.md) — Stripe + provisioning VPS-ów
+7. [database.md](database.md) — schemat Postgres + Row Level Security
+
+[CHANGELOG.md](CHANGELOG.md) — historia zmian per PR
+
+## Plany / RFC
+
+- [plans/revenue-cap-tracking.md](plans/revenue-cap-tracking.md) — admin tracking kwartalnych wpłat z alertami przez Brevo (zatwierdzony 2026-05-22)
 
 ## Aktualny stan (2026-05)
 
