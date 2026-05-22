@@ -1,0 +1,85 @@
+name: Docs gate
+
+# Wymusza aktualizację docs/CHANGELOG.md przy każdym PR-ze
+# oraz zmianę w docs/** jeśli PR dotyka kodu (js/jsx/html/sql).
+# Wyjątek: label `no-docs-needed` na PR (do nadawania tylko przez ownera).
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+jobs:
+  docs-required:
+    name: docs-required
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if PR has 'no-docs-needed' label
+        id: label
+        run: |
+          if echo '${{ toJSON(github.event.pull_request.labels.*.name) }}' | grep -q 'no-docs-needed'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compute changed files
+        if: steps.label.outputs.skip == 'false'
+        id: diff
+        run: |
+          BASE=${{ github.event.pull_request.base.sha }}
+          HEAD=${{ github.event.pull_request.head.sha }}
+          CHANGED=$(git diff --name-only "$BASE" "$HEAD")
+          echo "$CHANGED" > /tmp/changed.txt
+          echo "--- changed files:"
+          cat /tmp/changed.txt
+
+          # Czy są zmiany w kodzie (poza node_modules i lockfile)?
+          if grep -E '\.(js|jsx|ts|tsx|html|sql|mjs|cjs)$' /tmp/changed.txt | grep -v node_modules | grep -v package-lock.json | grep -q .; then
+            echo "code_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Czy CHANGELOG zaktualizowany?
+          if grep -q 'docs/CHANGELOG.md' /tmp/changed.txt; then
+            echo "changelog_updated=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changelog_updated=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Czy jakikolwiek doc zaktualizowany?
+          if grep -E '^docs/' /tmp/changed.txt | grep -q .; then
+            echo "docs_updated=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "docs_updated=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify CHANGELOG.md updated
+        if: steps.label.outputs.skip == 'false'
+        run: |
+          if [ "${{ steps.diff.outputs.changelog_updated }}" != "true" ]; then
+            echo "::error::PR musi zaktualizować docs/CHANGELOG.md (dodaj wpis dla tego PR-a)."
+            echo "Jeśli zmiana naprawdę nie wymaga changeloga (np. test-only, no-op refactor) — owner może dodać label 'no-docs-needed'."
+            exit 1
+          fi
+          echo "✓ docs/CHANGELOG.md zaktualizowany"
+
+      - name: Verify docs updated when code changes
+        if: steps.label.outputs.skip == 'false'
+        run: |
+          if [ "${{ steps.diff.outputs.code_changed }}" = "true" ] && [ "${{ steps.diff.outputs.docs_updated }}" != "true" ]; then
+            echo "::error::PR zmienia kod (.js/.jsx/.html/.sql) ale nie dotyka docs/**."
+            echo "Zaktualizuj odpowiedni dokument: docs/architecture.md, payments.md, database.md, auth.md, deployment.md, lub development.md."
+            echo "Jeśli zmiana naprawdę nie wymaga docs (np. trivial test) — owner może dodać label 'no-docs-needed'."
+            exit 1
+          fi
+          echo "✓ Docs gate OK"
+
+      - name: Skipped
+        if: steps.label.outputs.skip == 'true'
+        run: echo "Pomijam — label 'no-docs-needed'."
