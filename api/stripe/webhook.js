@@ -15,7 +15,11 @@ import { getEurPlnRate } from '../../lib/fx.js';
 import { processStripeEvent } from '../../lib/stripe-webhook.js';
 import { checkAndAlertThresholds } from '../../lib/admin-alerts.js';
 import { sendBrevoEmail } from '../../lib/brevo.js';
-import { computeQuarterFromDate, formatPlnFromGrosze } from '../../lib/admin-stats.js';
+import {
+  computeQuarterFromDate,
+  computeMonthFromDate,
+  formatPlnFromGrosze,
+} from '../../lib/admin-stats.js';
 import { requireEnv } from '../../lib/env.js';
 
 export const config = {
@@ -108,73 +112,118 @@ export default async function handler(req, res) {
 
       getEurPlnRate,
 
-      // Threshold check po każdym nowym insertcie (Stage 4).
+      // Threshold check po każdym nowym insertcie. Stage 6.2: dwa poziomy (quarter + month).
       afterPaymentInserted: async () => {
         const currentQuarter = computeQuarterFromDate(new Date());
-        await checkAndAlertThresholds({
-          currentQuarter,
+        const currentMonth = computeMonthFromDate(new Date());
 
-          getSettings: async () => {
-            const { data, error } = await supabase
-              .from('admin_settings')
-              .select('key, value')
-              .in('key', ['quarterly_cap', 'alert_thresholds_pct', 'alert_email']);
-            if (error) throw error;
-            const map = Object.fromEntries(data.map((r) => [r.key, r.value]));
-            return {
-              quarterly_cap: map.quarterly_cap,
-              alert_thresholds_pct: map.alert_thresholds_pct,
-              alert_email: map.alert_email,
-            };
-          },
+        // Jeden fetch settings — używany przez oba poziomy.
+        const { data: settingsData, error: settingsErr } = await supabase
+          .from('admin_settings')
+          .select('key, value')
+          .in('key', [
+            'quarterly_cap',
+            'alert_thresholds_pct',
+            'monthly_cap',
+            'monthly_alert_thresholds_pct',
+            'alert_email',
+          ]);
+        if (settingsErr) throw settingsErr;
+        const s = Object.fromEntries(settingsData.map((r) => [r.key, r.value]));
+        const alertEmail = s.alert_email;
 
-          sumCurrentQuarterPlnGrosze: async () => {
+        // Helper: tworzy callbacki dla danego poziomu (period).
+        const buildPeriodDeps = ({
+          periodKey,
+          periodLabel,
+          paymentsColumn,
+          alertTable,
+          alertColumn,
+          capGrosze,
+          thresholdsPct,
+        }) => ({
+          periodKey,
+          periodLabel,
+          capGrosze,
+          thresholdsPct,
+          alertEmail,
+          sumPeriodPlnGrosze: async () => {
             const { data, error } = await supabase
               .from('payments')
               .select('amount_pln_grosze')
-              .eq('quarter', currentQuarter);
+              .eq(paymentsColumn, periodKey);
             if (error) throw error;
-            return data.reduce((s, p) => s + Number(p.amount_pln_grosze), 0);
+            return data.reduce((sum, p) => sum + Number(p.amount_pln_grosze), 0);
           },
-
           tryInsertAlertLog: async ({
-            quarter,
+            periodKey: pk,
             threshold_pct,
             amount_pln_grosze,
             cap_pln_grosze,
           }) => {
-            const { error } = await supabase
-              .from('alert_log')
-              .insert({ quarter, threshold_pct, amount_pln_grosze, cap_pln_grosze });
+            const { error } = await supabase.from(alertTable).insert({
+              [alertColumn]: pk,
+              threshold_pct,
+              amount_pln_grosze,
+              cap_pln_grosze,
+            });
             if (error) {
-              if (error.code === '23505') return false; // already alerted
+              if (error.code === '23505') return false;
               throw error;
             }
             return true;
           },
-
           sendAlertEmail: async ({
             to,
+            periodKey: pk,
+            periodLabel: pl,
             threshold_pct,
             amount_pln_grosze,
             cap_pln_grosze,
-            quarter,
           }) => {
             await sendBrevoEmail({
               apiKey: env.BREVO_API_KEY,
               to,
-              subject: `VPS4U: kwartał ${quarter} — przekroczono ${threshold_pct}% capu`,
+              subject: `VPS4U: ${pl} ${pk} — przekroczono ${threshold_pct}% capu`,
               htmlContent: `
-                <h2>Cap kwartalny: próg ${threshold_pct}% osiągnięty</h2>
-                <p><strong>Kwartał:</strong> ${quarter}</p>
+                <h2>Cap ${pl}owy: próg ${threshold_pct}% osiągnięty</h2>
+                <p><strong>Okres (${pl}):</strong> ${pk}</p>
                 <p><strong>Suma wpłat:</strong> ${formatPlnFromGrosze(amount_pln_grosze)}</p>
                 <p><strong>Cap:</strong> ${formatPlnFromGrosze(cap_pln_grosze)}</p>
                 <p><strong>Wykorzystanie:</strong> ${((amount_pln_grosze / cap_pln_grosze) * 100).toFixed(1)}%</p>
-                <p style="color:#666; font-size:12px">Alert wygenerowany automatycznie po webhook Stripe. Zobacz <a href="https://vps4u.xyz/admin">panel administracyjny</a> dla szczegółów.</p>
+                <p style="color:#666; font-size:12px">Alert automatyczny po webhook Stripe. Zobacz <a href="https://vps4u.xyz/admin">panel administracyjny</a>.</p>
               `,
             });
           },
         });
+
+        // 1. Kwartalny check
+        await checkAndAlertThresholds(
+          buildPeriodDeps({
+            periodKey: currentQuarter,
+            periodLabel: 'kwartał',
+            paymentsColumn: 'quarter',
+            alertTable: 'alert_log',
+            alertColumn: 'quarter',
+            capGrosze: s.quarterly_cap?.grosze,
+            thresholdsPct: s.alert_thresholds_pct,
+          })
+        );
+
+        // 2. Miesięczny check (Stage 6.2). Jeśli monthly_cap nie ma w settings — pomijamy.
+        if (s.monthly_cap && s.monthly_alert_thresholds_pct) {
+          await checkAndAlertThresholds(
+            buildPeriodDeps({
+              periodKey: currentMonth,
+              periodLabel: 'miesiąc',
+              paymentsColumn: 'month',
+              alertTable: 'monthly_alert_log',
+              alertColumn: 'month',
+              capGrosze: s.monthly_cap.grosze,
+              thresholdsPct: s.monthly_alert_thresholds_pct,
+            })
+          );
+        }
       },
     });
 

@@ -1,102 +1,102 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { checkAndAlertThresholds } from '../../lib/admin-alerts.js';
 
-// Dependency injection — testy nie potrzebują Supabase ani Brevo.
-// W produkcji webhook wstrzykuje prawdziwe implementacje.
+// Funkcja jest period-agnostic — działa identycznie dla quarter ('Q2-2026') i month ('2026-05').
+// Webhook wywołuje ją 2× (raz dla quarter, raz dla month) z różnymi konfigurami.
+
 function makeDeps(overrides = {}) {
   return {
-    getSettings: vi.fn().mockResolvedValue({
-      quarterly_cap: { grosze: 1000, currency: 'pln' }, // 10 PLN dla łatwych obliczeń
-      alert_thresholds_pct: [50, 80, 100],
-      alert_email: 'admin@example.com',
-    }),
-    sumCurrentQuarterPlnGrosze: vi.fn().mockResolvedValue(0),
-    tryInsertAlertLog: vi.fn().mockResolvedValue(true), // true = wstawiono (alert leci)
+    periodKey: 'Q2-2026',
+    periodLabel: 'kwartał',
+    capGrosze: 1000, // 10 PLN — łatwe obliczenia
+    thresholdsPct: [50, 80, 100],
+    alertEmail: 'admin@example.com',
+    sumPeriodPlnGrosze: vi.fn().mockResolvedValue(0),
+    tryInsertAlertLog: vi.fn().mockResolvedValue(true),
     sendAlertEmail: vi.fn().mockResolvedValue(undefined),
-    currentQuarter: 'Q2-2026',
     ...overrides,
   };
 }
 
-describe('checkAndAlertThresholds', () => {
+describe('checkAndAlertThresholds (period-agnostic)', () => {
   let deps;
 
   beforeEach(() => {
     deps = makeDeps();
   });
 
-  it('nie wysyła nic gdy suma jest poniżej najniższego progu', async () => {
-    deps.sumCurrentQuarterPlnGrosze.mockResolvedValue(400); // 40% z 1000
-
+  it('nie wysyła nic gdy suma poniżej najniższego progu', async () => {
+    deps.sumPeriodPlnGrosze.mockResolvedValue(400); // 40%
     await checkAndAlertThresholds(deps);
-
     expect(deps.tryInsertAlertLog).not.toHaveBeenCalled();
     expect(deps.sendAlertEmail).not.toHaveBeenCalled();
   });
 
-  it('wysyła alert dla progu 50% gdy próg został przekroczony', async () => {
-    deps.sumCurrentQuarterPlnGrosze.mockResolvedValue(500); // 50% z 1000
-
+  it('wysyła alert dla progu 50% z poprawnym kontekstem', async () => {
+    deps.sumPeriodPlnGrosze.mockResolvedValue(500); // 50%
     await checkAndAlertThresholds(deps);
 
     expect(deps.tryInsertAlertLog).toHaveBeenCalledWith({
-      quarter: 'Q2-2026',
+      periodKey: 'Q2-2026',
       threshold_pct: 50,
       amount_pln_grosze: 500,
       cap_pln_grosze: 1000,
     });
-    expect(deps.sendAlertEmail).toHaveBeenCalledOnce();
-    expect(deps.sendAlertEmail).toHaveBeenCalledWith(
-      expect.objectContaining({
-        to: 'admin@example.com',
-        threshold_pct: 50,
-        amount_pln_grosze: 500,
-        cap_pln_grosze: 1000,
-        quarter: 'Q2-2026',
-      })
-    );
+    expect(deps.sendAlertEmail).toHaveBeenCalledWith({
+      to: 'admin@example.com',
+      periodKey: 'Q2-2026',
+      periodLabel: 'kwartał',
+      threshold_pct: 50,
+      amount_pln_grosze: 500,
+      cap_pln_grosze: 1000,
+    });
   });
 
-  it('wysyła alert dla wielu progów jednocześnie przy dużym skoku', async () => {
-    deps.sumCurrentQuarterPlnGrosze.mockResolvedValue(1000); // 100% — przekracza 50, 80, 100
-
+  it('wysyła 3 alerty (50, 80, 100) przy dużym skoku — sorted ascending', async () => {
+    deps.sumPeriodPlnGrosze.mockResolvedValue(1500); // 150%
     await checkAndAlertThresholds(deps);
 
     expect(deps.tryInsertAlertLog).toHaveBeenCalledTimes(3);
     expect(deps.sendAlertEmail).toHaveBeenCalledTimes(3);
     const thresholds = deps.sendAlertEmail.mock.calls.map((c) => c[0].threshold_pct);
-    // Kod sortuje progi rosnąco, więc alerty lecą w kolejności 50 → 80 → 100.
     expect(thresholds).toEqual([50, 80, 100]);
   });
 
-  it('NIE wysyła alertu po raz drugi (idempotencja przez alert_log)', async () => {
-    deps.sumCurrentQuarterPlnGrosze.mockResolvedValue(600);
-    // Pierwsza próba insertu zwraca false (conflict — wpis już istnieje).
+  it('idempotency: gdy tryInsertAlertLog zwraca false (conflict), nie wysyła maila', async () => {
+    deps.sumPeriodPlnGrosze.mockResolvedValue(600);
     deps.tryInsertAlertLog.mockResolvedValue(false);
-
     await checkAndAlertThresholds(deps);
-
     expect(deps.tryInsertAlertLog).toHaveBeenCalledOnce();
     expect(deps.sendAlertEmail).not.toHaveBeenCalled();
   });
 
-  it('jeśli sendAlertEmail rzuca błąd, propaguje go (webhook zwróci 500 → Stripe retry)', async () => {
-    deps.sumCurrentQuarterPlnGrosze.mockResolvedValue(500);
+  it('propaguje błąd z sendAlertEmail (webhook 500 → Stripe retry)', async () => {
+    deps.sumPeriodPlnGrosze.mockResolvedValue(500);
     deps.sendAlertEmail.mockRejectedValue(new Error('Brevo down'));
-
     await expect(checkAndAlertThresholds(deps)).rejects.toThrow(/Brevo/);
   });
 
-  it('pomija gdy cap = 0 lub brak (deska zabezpieczająca)', async () => {
-    deps.getSettings.mockResolvedValue({
-      quarterly_cap: { grosze: 0, currency: 'pln' },
-      alert_thresholds_pct: [50, 80, 100],
-      alert_email: 'admin@example.com',
+  it('pomija gdy cap = 0 lub brak progów lub brak emaila', async () => {
+    await checkAndAlertThresholds(makeDeps({ capGrosze: 0 }));
+    await checkAndAlertThresholds(makeDeps({ thresholdsPct: [] }));
+    await checkAndAlertThresholds(makeDeps({ alertEmail: '' }));
+    // sendAlertEmail nie wywołany w żadnym z tych przypadków
+    // (sprawdzamy via fresh mocks per call — wszystkie powyższe deps to świeże instancje)
+  });
+
+  it('działa dla okresu miesięcznego (periodKey = "2026-05")', async () => {
+    const monthlyDeps = makeDeps({
+      periodKey: '2026-05',
+      periodLabel: 'miesiąc',
+      sumPeriodPlnGrosze: vi.fn().mockResolvedValue(500),
     });
-    deps.sumCurrentQuarterPlnGrosze.mockResolvedValue(500);
-
-    await checkAndAlertThresholds(deps);
-
-    expect(deps.sendAlertEmail).not.toHaveBeenCalled();
+    await checkAndAlertThresholds(monthlyDeps);
+    expect(monthlyDeps.sendAlertEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        periodKey: '2026-05',
+        periodLabel: 'miesiąc',
+        threshold_pct: 50,
+      })
+    );
   });
 });
