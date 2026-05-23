@@ -4,6 +4,19 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #25] — 2026-05-24
+
+- **Stage 7.1**: schema produktów dla modelu agregatora (z planu aggregator-reseller-mvp)
+- Migracja 008: 3 tabele:
+  - `provider_info` — 6 dostawców (Hetzner CX/CPX, Contabo, Hostinger, OVH Value/Comfort) + RLS public read
+  - `product_lines` — 6 linii (Gold/Orange/Czarny/Biały/Czerwony/Niebieski) z marketingowymi nazwami, mapowane na dostawców, `active=true`
+  - `product_configurations` — **90 aktywnych konfiguracji** (16 combo × 6 linii − 6 nieaktywnych A dla Gold/Orange) z cennikiem z briefu sekcji 7-8
+- PLN ceny = EUR × 4.30 round (do późniejszej korekty admina)
+- Stripe Price ID columns (puste na razie, wypełnione przez setup script w Stage 7.2)
+- `scripts/_gen_seed_configurations.py` — deterministyczny generator seed SQL z briefu
+- `lib/pricing.js` — pure helpery walidacji: `normalizeHardwareCombo`, `isValidAddon/Currency/Period`, `formatHardwareLabel` (mapping na marketingowe nazwy z briefu), `formatPricePln/Eur`
+- 13 nowych testów, total **79 unit + 8 E2E**
+
 ## [PR #24] — 2026-05-24
 
 - Plan: aggregator/reseller MVP — przerobienie strony pod model agregatora 6 dostawców (z `vps-brief.md`), zachowując pełen cennik
