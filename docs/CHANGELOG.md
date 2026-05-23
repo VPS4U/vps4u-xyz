@@ -4,6 +4,12 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #23] — 2026-05-24
+
+- Chore: Actions storage cleanup — usunięty Playwright cache step + retencja `playwright-report` artifact 7→1 dni
+- Powód: 0.5GB Actions storage na free tier wyczerpane (głównie przez cache Chromium ~150MB)
+- Konsekwencja: każdy run `e2e` instaluje Chromium od zera (+~30s); nie cache'ujemy = nie zajmujemy storage
+
 ## [PR #22] — 2026-05-24
 
 - **Stage 6.3**: monthly cap — UI (część 3/3 z planu monthly-cap-tracking)
