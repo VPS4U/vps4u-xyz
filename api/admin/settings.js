@@ -59,13 +59,11 @@ export default async function handler(req, res) {
     return;
   }
 
-  // 3. Upsert do admin_settings (service_role omija RLS)
+  // 3. Upsert do admin_settings (service_role omija RLS).
+  // Dynamicznie z payload — upsertujemy tylko klucze które przyszły, monthly_* opcjonalne
+  // do czasu rozszerzenia UI w Stage 6.3.
   const supabase = createSupabaseAdmin(supabaseConfig);
-  const rows = [
-    { key: 'quarterly_cap', value: payload.quarterly_cap },
-    { key: 'alert_thresholds_pct', value: payload.alert_thresholds_pct },
-    { key: 'alert_email', value: payload.alert_email },
-  ];
+  const rows = Object.entries(payload).map(([key, value]) => ({ key, value }));
 
   for (const row of rows) {
     const { error } = await supabase.from('admin_settings').upsert(row, { onConflict: 'key' });

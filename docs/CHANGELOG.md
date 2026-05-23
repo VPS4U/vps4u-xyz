@@ -4,6 +4,19 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #20] — 2026-05-23
+
+- **Stage 6.1**: monthly cap — schema + helpery (część 1/3 z planu monthly-cap-tracking)
+- Migracja 007:
+  - `payments.month text not null` (format `YYYY-MM` UTC) — backfill istniejących wierszy
+  - Trigger `compute_payment_period` (zastępuje `compute_payment_quarter`) — ustawia oba `quarter` i `month` naraz
+  - Tabela `monthly_alert_log` z `unique(month, threshold_pct)` + indeks + RLS admin-read
+  - Seed `admin_settings.monthly_cap` (20 000 PLN domyślnie) + `monthly_alert_thresholds_pct` ([50,80,100])
+- `lib/admin-stats.js` — `computeMonthFromDate(date)` (analog do quarter)
+- `lib/admin-settings-validate.js` — accept `monthly_cap` i `monthly_alert_thresholds_pct` (paired: oba lub żaden; backward-compat: payload bez monthly też przechodzi, używane przez stare UI do Stage 6.3)
+- `api/admin/settings.js` — upsert dynamiczny z `Object.entries(payload)` zamiast hardcoded listy
+- 8 nowych testów (3 dla `computeMonth` + 5 dla walidacji monthly), total **63 unit + 8 E2E**
+
 ## [PR #19] — 2026-05-23
 
 - Plan: miesięczny cap (równoległy do kwartalnego) — `docs/plans/monthly-cap-tracking.md`

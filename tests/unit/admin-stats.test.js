@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   computeQuarterFromDate,
+  computeMonthFromDate,
   sumPaymentsPlnGrosze,
   groupByQuarter,
   formatPlnFromGrosze,
@@ -16,6 +17,22 @@ describe('computeQuarterFromDate', () => {
 
   it('akceptuje string ISO', () => {
     expect(computeQuarterFromDate('2026-05-15')).toBe('Q2-2026');
+  });
+});
+
+describe('computeMonthFromDate', () => {
+  it('zwraca miesiąc w formacie YYYY-MM (UTC)', () => {
+    expect(computeMonthFromDate(new Date('2026-01-15T12:00:00Z'))).toBe('2026-01');
+    expect(computeMonthFromDate(new Date('2026-05-31T23:59:59Z'))).toBe('2026-05');
+    expect(computeMonthFromDate(new Date('2026-12-01T00:00:00Z'))).toBe('2026-12');
+  });
+
+  it('akceptuje string ISO', () => {
+    expect(computeMonthFromDate('2026-07-15')).toBe('2026-07');
+  });
+
+  it('pad'.concat('uje miesiąc do dwóch cyfr (np. styczeń → 01)'), () => {
+    expect(computeMonthFromDate(new Date('2026-03-15T12:00:00Z'))).toBe('2026-03');
   });
 });
 

@@ -64,6 +64,7 @@ Plik źródłowy SQL: do skopiowania z [README.md](README.md) — będzie zarzą
 - `fx_table_date date` — data publikacji tabeli NBP (do audytu)
 - `charged_at timestamptz` — moment płatności u PSP
 - `quarter text` — ustawiane triggerem (`Q1-2026`, `Q2-2026`, ...) — indeksowane dla cap tracking
+- `month text` — ustawiane triggerem (`2026-01`, `2026-05`, ...) — indeksowane dla monthly cap (Stage 6.1)
 - `created_at timestamptz`
 
 **`public.admin_settings`** — key-value config dla admina (Stage 4):
@@ -71,9 +72,13 @@ Plik źródłowy SQL: do skopiowania z [README.md](README.md) — będzie zarzą
 - Seeded klucze: `quarterly_cap` (`{grosze, currency}`), `alert_thresholds_pct` (np. `[50, 80, 100]`), `alert_email`
 - RLS: read+update tylko dla adminów
 
-**`public.alert_log`** — historia wysłanych alertów (Stage 4):
+**`public.alert_log`** — historia wysłanych alertów kwartalnych (Stage 4):
 - `id uuid`, `quarter text`, `threshold_pct int`, `amount_pln_grosze bigint`, `cap_pln_grosze bigint`, `fired_at timestamptz`
 - `unique(quarter, threshold_pct)` — gwarancja jednokrotnego alertu per próg w kwartale (webhook retry-safe)
+
+**`public.monthly_alert_log`** — historia wysłanych alertów miesięcznych (Stage 6.1, analog do `alert_log`):
+- `id uuid`, `month text` (`YYYY-MM`), `threshold_pct int`, `amount_pln_grosze bigint`, `cap_pln_grosze bigint`, `fired_at timestamptz`
+- `unique(month, threshold_pct)`
 
 **`public.vps_instances`** — fizyczne VPS-y:
 - `id uuid` — PK
