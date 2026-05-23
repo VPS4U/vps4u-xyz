@@ -80,6 +80,22 @@ Plik źródłowy SQL: do skopiowania z [README.md](README.md) — będzie zarzą
 - `id uuid`, `month text` (`YYYY-MM`), `threshold_pct int`, `amount_pln_grosze bigint`, `cap_pln_grosze bigint`, `fired_at timestamptz`
 - `unique(month, threshold_pct)`
 
+**`public.provider_info`** — meta o 6 dostawcach infrastruktury (Stage 7.1):
+- `id`, `code` (`hetzner_cx`/`contabo`/`hetzner_cpx`/`hostinger`/`ovh_value`/`ovh_comfort`), `name`, `country`, `has_polish_panel`, `notes`
+- RLS: public read
+
+**`public.product_lines`** — 6 linii marketingowych (Stage 7.1):
+- `id`, `sku_code` (`gold`/`orange`/`czarny`/`bialy`/`czerwony`/`niebieski`), `marketing_name` ("Cloud Lite/Standard/Business/Performance/Pro/Enterprise"), `provider_id`, `positioning`, `backup_available`, `backup_included_from`, `anti_ddos_level`, `locations text[]`, `active`
+- RLS: public read tylko aktywnych
+
+**`public.product_configurations`** — lookup table cennika (Stage 7.1, 90 wierszy):
+- `id`, `line_id`, `hardware_combo` (base/S/D/S+D/L/L+S/L+D/L+S+D), `addons text[]` (X, A)
+- Specy: `vcpu`, `ram_gb`, `disk_gb`, `transfer_tb`, `ipv4_count`, `port_mbps`, `has_backup`
+- 4 ceny: `price_monthly_eur_cents`, `price_monthly_pln_grosze`, `price_yearly_eur_cents` (nullable), `price_yearly_pln_grosze` (nullable)
+- Stripe price IDs (puste przed Stage 7.2): `stripe_product_id`, `stripe_price_monthly_eur_id`, ...
+- Operacyjne: `cost_price_monthly_eur_cents`, `markup_percent`
+- `unique(line_id, hardware_combo, addons)`
+
 **`public.vps_instances`** — fizyczne VPS-y:
 - `id uuid` — PK
 - `subscription_id uuid` — FK
