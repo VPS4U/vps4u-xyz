@@ -53,11 +53,8 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+      # NIE cache'ujemy Playwright browsers — z 0.5GB Actions storage na free tier
+      # 150MB cache zżerało większość limitu. Pełen install ~30s — akceptowalny narzut.
       - name: Install Chromium
         run: npx playwright install chromium --with-deps
       - name: Run E2E tests
@@ -68,4 +65,4 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report/
-          retention-days: 7
+          retention-days: 1
