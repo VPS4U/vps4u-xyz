@@ -5,6 +5,7 @@
 import { createSupabaseAdmin } from '../../lib/supabase-admin.js';
 import { requireAdmin, extractBearerToken, AuthError } from '../../lib/admin-auth.js';
 import { validateSettingsPayload } from '../../lib/admin-settings-validate.js';
+import { requireEnv } from '../../lib/env.js';
 
 export const config = { api: { bodyParser: false } };
 
@@ -23,9 +24,18 @@ export default async function handler(req, res) {
     return;
   }
 
+  let env;
+  try {
+    env = requireEnv(['SUPABASE_URL', 'SUPABASE_SERVICE_KEY']);
+  } catch (err) {
+    console.error('Env config error:', err.message);
+    res.status(500).send(`Server misconfiguration: ${err.message}`);
+    return;
+  }
+
   const supabaseConfig = {
-    url: process.env.SUPABASE_URL,
-    serviceKey: process.env.SUPABASE_SERVICE_KEY,
+    url: env.SUPABASE_URL,
+    serviceKey: env.SUPABASE_SERVICE_KEY,
   };
 
   // 1. Auth
