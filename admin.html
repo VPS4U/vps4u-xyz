@@ -59,10 +59,27 @@
   <div id="content" style="display:none">
     <header class="admin-head">
       <div>
-        <h1>Admin · cap quarterly</h1>
+        <h1>Admin · cap monthly + quarterly</h1>
         <p class="who">Zalogowany jako: <strong id="user-email">…</strong> (admin)</p>
       </div>
     </header>
+
+    <section class="admin-section">
+      <h2 id="current-month-label">Bieżący miesiąc</h2>
+      <div class="quarter-card">
+        <div class="label">Suma wpłat / cap miesięczny</div>
+        <div class="value"><span id="month-total">…</span></div>
+        <div class="sub">
+          <span id="month-count">…</span> płatności ·
+          cap <span id="month-cap">…</span> ·
+          <strong><span id="month-pct">…</span>%</strong> wykorzystania
+        </div>
+        <div class="progress">
+          <div class="progress-bar" id="month-progress-bar" style="width:0%"></div>
+          <span class="progress-label" id="month-progress-label">0%</span>
+        </div>
+      </div>
+    </section>
 
     <section class="admin-section">
       <h2 id="current-quarter-label">Bieżący kwartał</h2>
@@ -83,17 +100,33 @@
 
     <section class="admin-section">
       <h2>Ustawienia capa i alertów</h2>
-      <form id="settings-form" class="quarter-card" style="display:flex; flex-direction:column; gap:16px">
+      <form id="settings-form" class="quarter-card" style="display:flex; flex-direction:column; gap:20px">
+        <fieldset style="border:1.5px solid var(--ink-2, #888); padding:14px; display:flex; flex-direction:column; gap:10px">
+          <legend style="font-family:'Archivo Black',sans-serif; font-size:13px; text-transform:uppercase; letter-spacing:.04em; padding:0 8px">Kwartalny cap</legend>
+          <div>
+            <label for="settings-cap" style="display:block; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px">Cap (PLN)</label>
+            <input type="number" id="settings-cap" min="1" step="1" required style="width:200px; padding:8px 12px; border:1.5px solid var(--ink); font-family:'JetBrains Mono',monospace; font-size:16px" />
+          </div>
+          <div>
+            <label style="display:block; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px">Progi alertów (%)</label>
+            <div id="settings-thresholds" style="display:flex; gap:12px; flex-wrap:wrap"></div>
+          </div>
+        </fieldset>
+
+        <fieldset style="border:1.5px solid var(--ink-2, #888); padding:14px; display:flex; flex-direction:column; gap:10px">
+          <legend style="font-family:'Archivo Black',sans-serif; font-size:13px; text-transform:uppercase; letter-spacing:.04em; padding:0 8px">Miesięczny cap</legend>
+          <div>
+            <label for="settings-monthly-cap" style="display:block; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px">Cap (PLN)</label>
+            <input type="number" id="settings-monthly-cap" min="1" step="1" required style="width:200px; padding:8px 12px; border:1.5px solid var(--ink); font-family:'JetBrains Mono',monospace; font-size:16px" />
+          </div>
+          <div>
+            <label style="display:block; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px">Progi alertów (%)</label>
+            <div id="settings-monthly-thresholds" style="display:flex; gap:12px; flex-wrap:wrap"></div>
+          </div>
+        </fieldset>
+
         <div>
-          <label for="settings-cap" style="display:block; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px">Cap kwartalny (PLN)</label>
-          <input type="number" id="settings-cap" min="1" step="1" required style="width:200px; padding:8px 12px; border:1.5px solid var(--ink); font-family:'JetBrains Mono',monospace; font-size:16px" />
-        </div>
-        <div>
-          <label style="display:block; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px">Progi alertów (%)</label>
-          <div id="settings-thresholds" style="display:flex; gap:12px; flex-wrap:wrap"></div>
-        </div>
-        <div>
-          <label for="settings-email" style="display:block; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px">Email odbiorczy alertów</label>
+          <label for="settings-email" style="display:block; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px">Email odbiorczy alertów (wspólny dla obu)</label>
           <input type="email" id="settings-email" required style="width:300px; padding:8px 12px; border:1.5px solid var(--ink); font-family:'JetBrains Mono',monospace; font-size:14px" />
         </div>
         <div style="display:flex; gap:12px; align-items:center; margin-top:8px">
@@ -102,6 +135,20 @@
           <span id="settings-status" style="font-family:'JetBrains Mono',monospace; font-size:12px"></span>
         </div>
       </form>
+    </section>
+
+    <section class="admin-section">
+      <h2>Ostatnie 6 miesięcy</h2>
+      <table class="admin-table" id="months-table">
+        <thead>
+          <tr>
+            <th>Miesiąc</th>
+            <th>Liczba płatności</th>
+            <th>Suma (PLN)</th>
+          </tr>
+        </thead>
+        <tbody id="months-body"></tbody>
+      </table>
     </section>
 
     <section class="admin-section">
@@ -147,8 +194,10 @@
   import { supabase } from '/lib/supabase.js';
   import {
     computeQuarterFromDate,
+    computeMonthFromDate,
     sumPaymentsPlnGrosze,
     groupByQuarter,
+    groupByMonth,
     formatPlnFromGrosze,
   } from '/lib/admin-stats.js';
 
@@ -187,7 +236,9 @@
   }
   const settingsMap = Object.fromEntries((settingsRows ?? []).map((r) => [r.key, r.value]));
   const QUARTERLY_CAP_GROSZE = settingsMap.quarterly_cap?.grosze ?? 5_000_000;
+  const MONTHLY_CAP_GROSZE = settingsMap.monthly_cap?.grosze ?? 2_000_000;
   const currentThresholds = settingsMap.alert_thresholds_pct ?? [50, 80, 100];
+  const currentMonthlyThresholds = settingsMap.monthly_alert_thresholds_pct ?? [50, 80, 100];
   const currentAlertEmail = settingsMap.alert_email ?? '';
 
   // Pobierz wszystkie płatności (RLS odda wszystko jeśli admin).
@@ -202,28 +253,59 @@
 
   const payments = allPayments ?? [];
 
+  // Helper do renderowania karty okresu (cap + suma + % bar)
+  const renderCard = ({ labelEl, label, total, cap, count, ids }) => {
+    const pct = cap > 0 ? (total / cap) * 100 : 0;
+    if (labelEl) labelEl.textContent = label;
+    document.getElementById(ids.total).textContent = formatPlnFromGrosze(total);
+    document.getElementById(ids.count).textContent = count;
+    document.getElementById(ids.cap).textContent = formatPlnFromGrosze(cap);
+    document.getElementById(ids.pct).textContent = pct.toFixed(1);
+    const bar = document.getElementById(ids.bar);
+    bar.style.width = `${Math.min(pct, 100)}%`;
+    bar.className = 'progress-bar ' + (pct < 50 ? 'low' : pct < 80 ? 'med' : 'high');
+    document.getElementById(ids.barLabel).textContent = `${pct.toFixed(0)}%`;
+    return pct;
+  };
+
+  // Bieżący miesiąc
+  const currentMonth = computeMonthFromDate(new Date());
+  const monthPayments = payments.filter((p) => p.month === currentMonth);
+  renderCard({
+    labelEl: document.getElementById('current-month-label'),
+    label: `Bieżący miesiąc — ${currentMonth}`,
+    total: sumPaymentsPlnGrosze(monthPayments),
+    cap: MONTHLY_CAP_GROSZE,
+    count: monthPayments.length,
+    ids: { total: 'month-total', count: 'month-count', cap: 'month-cap', pct: 'month-pct', bar: 'month-progress-bar', barLabel: 'month-progress-label' },
+  });
+
   // Bieżący kwartał
   const currentQuarter = computeQuarterFromDate(new Date());
-  document.getElementById('current-quarter-label').textContent = `Bieżący kwartał — ${currentQuarter}`;
   const currentPayments = payments.filter((p) => p.quarter === currentQuarter);
-  const currentTotal = sumPaymentsPlnGrosze(currentPayments);
-  const pct = QUARTERLY_CAP_GROSZE > 0 ? (currentTotal / QUARTERLY_CAP_GROSZE) * 100 : 0;
-
-  document.getElementById('current-total').textContent = formatPlnFromGrosze(currentTotal);
-  document.getElementById('current-count').textContent = currentPayments.length;
-  document.getElementById('current-cap').textContent = formatPlnFromGrosze(QUARTERLY_CAP_GROSZE);
-  document.getElementById('current-pct').textContent = pct.toFixed(1);
+  const pct = renderCard({
+    labelEl: document.getElementById('current-quarter-label'),
+    label: `Bieżący kwartał — ${currentQuarter}`,
+    total: sumPaymentsPlnGrosze(currentPayments),
+    cap: QUARTERLY_CAP_GROSZE,
+    count: currentPayments.length,
+    ids: { total: 'current-total', count: 'current-count', cap: 'current-cap', pct: 'current-pct', bar: 'progress-bar', barLabel: 'progress-label' },
+  });
 
   // Settings form: prefill
   document.getElementById('settings-cap').value = Math.round(QUARTERLY_CAP_GROSZE / 100);
+  document.getElementById('settings-monthly-cap').value = Math.round(MONTHLY_CAP_GROSZE / 100);
   document.getElementById('settings-email').value = currentAlertEmail;
-  const thresholdsEl = document.getElementById('settings-thresholds');
-  thresholdsEl.innerHTML = ALL_THRESHOLDS.map((t) => `
-    <label style="display:flex; align-items:center; gap:6px; cursor:pointer">
-      <input type="checkbox" name="threshold" value="${t}" ${currentThresholds.includes(t) ? 'checked' : ''} />
-      <span style="font-family:'JetBrains Mono',monospace; font-size:13px">${t}%</span>
-    </label>
-  `).join('');
+  const renderThresholds = (containerId, name, selected) => {
+    document.getElementById(containerId).innerHTML = ALL_THRESHOLDS.map((t) => `
+      <label style="display:flex; align-items:center; gap:6px; cursor:pointer">
+        <input type="checkbox" name="${name}" value="${t}" ${selected.includes(t) ? 'checked' : ''} />
+        <span style="font-family:'JetBrains Mono',monospace; font-size:13px">${t}%</span>
+      </label>
+    `).join('');
+  };
+  renderThresholds('settings-thresholds', 'threshold', currentThresholds);
+  renderThresholds('settings-monthly-thresholds', 'monthly-threshold', currentMonthlyThresholds);
 
   // Save handler
   const setStatus = (msg, color) => {
@@ -236,7 +318,9 @@
     e.preventDefault();
     setStatus('Zapisuję…', 'var(--ink)');
     const capPln = Number(document.getElementById('settings-cap').value);
+    const monthlyCapPln = Number(document.getElementById('settings-monthly-cap').value);
     const thresholds = [...document.querySelectorAll('input[name="threshold"]:checked')].map((el) => Number(el.value));
+    const monthlyThresholds = [...document.querySelectorAll('input[name="monthly-threshold"]:checked')].map((el) => Number(el.value));
     const email = document.getElementById('settings-email').value.trim();
 
     const res = await fetch('/api/admin/settings', {
@@ -248,6 +332,8 @@
       body: JSON.stringify({
         quarterly_cap: { grosze: capPln * 100, currency: 'pln' },
         alert_thresholds_pct: thresholds,
+        monthly_cap: { grosze: monthlyCapPln * 100, currency: 'pln' },
+        monthly_alert_thresholds_pct: monthlyThresholds,
         alert_email: email,
       }),
     });
@@ -275,10 +361,25 @@
     }
   });
 
-  const bar = document.getElementById('progress-bar');
-  bar.style.width = `${Math.min(pct, 100)}%`;
-  bar.className = 'progress-bar ' + (pct < 50 ? 'low' : pct < 80 ? 'med' : 'high');
-  document.getElementById('progress-label').textContent = `${pct.toFixed(0)}%`;
+  void pct;
+
+  // Ostatnie 6 miesięcy
+  const monthGroups = groupByMonth(payments);
+  const monthKeys = Object.keys(monthGroups).sort().reverse().slice(0, 6);
+  const monthsBody = document.getElementById('months-body');
+  if (monthKeys.length === 0) {
+    monthsBody.innerHTML = '<tr><td colspan="3" class="mono" style="color:var(--muted)">// brak danych</td></tr>';
+  } else {
+    monthsBody.innerHTML = monthKeys.map((m) => {
+      const row = monthGroups[m];
+      const isCurrent = m === currentMonth;
+      return `<tr class="${isCurrent ? 'current' : ''}">
+        <td class="mono">${m}</td>
+        <td>${row.count}</td>
+        <td>${formatPlnFromGrosze(row.total_pln_grosze)}</td>
+      </tr>`;
+    }).join('');
+  }
 
   // Ostatnie 4 kwartały
   const groups = groupByQuarter(payments);

@@ -4,6 +4,20 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #22] — 2026-05-24
+
+- **Stage 6.3**: monthly cap — UI (część 3/3 z planu monthly-cap-tracking)
+- `lib/admin-stats.js` — `groupByMonth(payments)` (analog do `groupByQuarter`), refactor do wspólnego `groupByKey`. 2 nowe testy
+- `admin.html`:
+  - Sekcja **"Bieżący miesiąc"** (karta z capem, sumą, % barem) — analogiczna do kwartału
+  - Tabela **"Ostatnie 6 miesięcy"** — historia
+  - Settings form rozszerzony o pole `monthly_cap` (input PLN) + 6 checkboxów monthly thresholds — w osobnym `<fieldset>`
+  - Submit wysyła oba poziomy (`quarterly_cap` + `monthly_cap`)
+  - Helper `renderCard()` deduplikuje boilerplate dla obu kart
+- Title strony: "Admin · cap monthly + quarterly"
+- Total: **66 unit + 8 E2E** zielone
+- **Plan monthly-cap-tracking.md zrealizowany w pełni** (6.1 + 6.2 + 6.3)
+
 ## [PR #21] — 2026-05-23
 
 - **Stage 6.2**: monthly cap — alert logic + wiring (część 2/3 z planu monthly-cap-tracking)
