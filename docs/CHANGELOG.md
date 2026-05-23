@@ -4,6 +4,16 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #21] — 2026-05-23
+
+- **Stage 6.2**: monthly cap — alert logic + wiring (część 2/3 z planu monthly-cap-tracking)
+- `lib/admin-alerts.js` — refactor na **period-agnostic**: `checkAndAlertThresholds({periodKey, periodLabel, capGrosze, thresholdsPct, alertEmail, sumPeriodPlnGrosze, tryInsertAlertLog, sendAlertEmail})`. Działa identycznie dla quarter (`'Q2-2026'`) i month (`'2026-05'`)
+- `api/stripe/webhook.js` — `afterPaymentInserted` jeden fetch settings, wywołuje `checkAndAlertThresholds` 2× (quarter + month). Jeśli `monthly_cap` brakuje w settings — pomija monthly check (backward-compat)
+- `api/admin/test-alert.js` — wysyła 2 maile (kwartalny + miesięczny). Returns `{ok: true, sent_to, count}`
+- Templates maili rozróżniają `periodLabel` ("kwartał"/"miesiąc") w tytule i body
+- 7 testów `admin-alerts.test.js` przepisane pod nowe API (period-agnostic), + nowy test "działa dla okresu miesięcznego"
+- Total: **64 unit + 8 E2E** zielone
+
 ## [PR #20] — 2026-05-23
 
 - **Stage 6.1**: monthly cap — schema + helpery (część 1/3 z planu monthly-cap-tracking)
