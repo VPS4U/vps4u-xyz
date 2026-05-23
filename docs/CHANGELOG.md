@@ -4,6 +4,15 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #24] — 2026-05-24
+
+- Plan: aggregator/reseller MVP — przerobienie strony pod model agregatora 6 dostawców (z `vps-brief.md`), zachowując pełen cennik
+- 7 etapów (schema → setup script → checkout → konfigurator → porównywarka → strona główna → live migration)
+- Architektura Stripe: pre-created Products + Prices via setup script (~96 SKU × 4 wariantów = ~384 Stripe Prices), checkout dynamiczny przez `Stripe.checkout.sessions.create`
+- Hybrydowa marka (VPS4U front + ujawnienie dostawcy w karcie + regulaminie)
+- Drop: SLA %, sztywne czasy supportu (właściciel nie chce zobowiązań)
+- Wymaga rozstrzygnięć właściciela (D1-D9) — kluczowe D1 (zakontraktowani dostawcy) i D3 (nazwy marketingowe)
+
 ## [PR #23] — 2026-05-24
 
 - Chore: Actions storage cleanup — usunięty Playwright cache step + retencja `playwright-report` artifact 7→1 dni
