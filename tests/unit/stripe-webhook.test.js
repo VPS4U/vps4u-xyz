@@ -7,8 +7,9 @@ function makeDeps() {
   return {
     upsertProfileStripeId: vi.fn(),
     findProfileByStripeId: vi.fn(),
-    insertPayment: vi.fn(),
+    insertPayment: vi.fn().mockResolvedValue(true), // domyślnie: nowy insert (nie duplikat)
     getEurPlnRate: vi.fn(),
+    afterPaymentInserted: vi.fn(),
   };
 }
 
@@ -117,6 +118,27 @@ describe('processStripeEvent — invoice.payment_succeeded', () => {
     expect(deps.insertPayment).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(/usd/i));
     warn.mockRestore();
+  });
+});
+
+describe('processStripeEvent — threshold callback', () => {
+  let deps;
+
+  beforeEach(() => {
+    deps = makeDeps();
+    deps.findProfileByStripeId.mockResolvedValue({ id: 'user-uuid-1' });
+  });
+
+  it('wywołuje afterPaymentInserted po pomyślnym insertcie nowej płatności', async () => {
+    deps.insertPayment.mockResolvedValue(true);
+    await processStripeEvent(PLN_INVOICE_EVENT, deps);
+    expect(deps.afterPaymentInserted).toHaveBeenCalledOnce();
+  });
+
+  it('NIE wywołuje afterPaymentInserted gdy płatność była duplikatem (conflict)', async () => {
+    deps.insertPayment.mockResolvedValue(false);
+    await processStripeEvent(PLN_INVOICE_EVENT, deps);
+    expect(deps.afterPaymentInserted).not.toHaveBeenCalled();
   });
 });
 

@@ -13,6 +13,9 @@ import Stripe from 'stripe';
 import { createSupabaseAdmin } from '../../lib/supabase-admin.js';
 import { getEurPlnRate } from '../../lib/fx.js';
 import { processStripeEvent } from '../../lib/stripe-webhook.js';
+import { checkAndAlertThresholds } from '../../lib/admin-alerts.js';
+import { sendBrevoEmail } from '../../lib/brevo.js';
+import { computeQuarterFromDate, formatPlnFromGrosze } from '../../lib/admin-stats.js';
 
 export const config = {
   api: {
@@ -80,13 +83,83 @@ export default async function handler(req, res) {
             console.log(
               `Payment ${payment.external_charge_id} już istnieje — webhook retry, ignoruję`
             );
-            return;
+            return false;
           }
           throw error;
         }
+        return true;
       },
 
       getEurPlnRate,
+
+      // Threshold check po każdym nowym insertcie (Stage 4).
+      afterPaymentInserted: async () => {
+        const currentQuarter = computeQuarterFromDate(new Date());
+        await checkAndAlertThresholds({
+          currentQuarter,
+
+          getSettings: async () => {
+            const { data, error } = await supabase
+              .from('admin_settings')
+              .select('key, value')
+              .in('key', ['quarterly_cap', 'alert_thresholds_pct', 'alert_email']);
+            if (error) throw error;
+            const map = Object.fromEntries(data.map((r) => [r.key, r.value]));
+            return {
+              quarterly_cap: map.quarterly_cap,
+              alert_thresholds_pct: map.alert_thresholds_pct,
+              alert_email: map.alert_email,
+            };
+          },
+
+          sumCurrentQuarterPlnGrosze: async () => {
+            const { data, error } = await supabase
+              .from('payments')
+              .select('amount_pln_grosze')
+              .eq('quarter', currentQuarter);
+            if (error) throw error;
+            return data.reduce((s, p) => s + Number(p.amount_pln_grosze), 0);
+          },
+
+          tryInsertAlertLog: async ({
+            quarter,
+            threshold_pct,
+            amount_pln_grosze,
+            cap_pln_grosze,
+          }) => {
+            const { error } = await supabase
+              .from('alert_log')
+              .insert({ quarter, threshold_pct, amount_pln_grosze, cap_pln_grosze });
+            if (error) {
+              if (error.code === '23505') return false; // already alerted
+              throw error;
+            }
+            return true;
+          },
+
+          sendAlertEmail: async ({
+            to,
+            threshold_pct,
+            amount_pln_grosze,
+            cap_pln_grosze,
+            quarter,
+          }) => {
+            await sendBrevoEmail({
+              apiKey: process.env.BREVO_API_KEY,
+              to,
+              subject: `VPS4U: kwartał ${quarter} — przekroczono ${threshold_pct}% capu`,
+              htmlContent: `
+                <h2>Cap kwartalny: próg ${threshold_pct}% osiągnięty</h2>
+                <p><strong>Kwartał:</strong> ${quarter}</p>
+                <p><strong>Suma wpłat:</strong> ${formatPlnFromGrosze(amount_pln_grosze)}</p>
+                <p><strong>Cap:</strong> ${formatPlnFromGrosze(cap_pln_grosze)}</p>
+                <p><strong>Wykorzystanie:</strong> ${((amount_pln_grosze / cap_pln_grosze) * 100).toFixed(1)}%</p>
+                <p style="color:#666; font-size:12px">Alert wygenerowany automatycznie po webhook Stripe. Zobacz <a href="https://vps4u.xyz/admin">panel administracyjny</a> dla szczegółów.</p>
+              `,
+            });
+          },
+        });
+      },
     });
 
     res.status(200).json({ received: true });
