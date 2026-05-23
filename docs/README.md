@@ -14,7 +14,19 @@ Wewnętrzna dokumentacja projektu. Czytaj w tej kolejności, jeśli widzisz to p
 
 ## Plany / RFC
 
-- [plans/revenue-cap-tracking.md](plans/revenue-cap-tracking.md) — admin tracking kwartalnych wpłat z alertami przez Brevo (zatwierdzony 2026-05-22)
+- [plans/revenue-cap-tracking.md](plans/revenue-cap-tracking.md) — admin tracking kwartalnych wpłat z alertami przez Brevo (zatwierdzony 2026-05-22, **zrealizowany** PR #5–#18)
+- [plans/monthly-cap-tracking.md](plans/monthly-cap-tracking.md) — miesięczny cap równoległy do kwartalnego (do zatwierdzenia, 2026-05-23)
+
+## Backlog (kolejne plany / pomysły)
+
+- Roczny cap (rozszerzenie po monthly cap)
+- Per-product cap (cap per kategoria produktu — wymaga segmentowania w Stripe)
+- Refundy / chargebacks (Stage 7 z revenue-cap planu)
+- Eksport CSV dla księgowej
+- Rolling 30-day window (zamiast sztywnych miesięcy)
+- Powiadomienia Slack/Discord (oprócz email)
+- Contabo provisioning (z `docs/payments.md`)
+- Stage 6 Revolut Pro email parser (z revenue-cap planu)
 
 ## Aktualny stan (2026-05)
 

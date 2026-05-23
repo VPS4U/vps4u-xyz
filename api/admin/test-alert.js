@@ -5,6 +5,7 @@ import { createSupabaseAdmin } from '../../lib/supabase-admin.js';
 import { requireAdmin, extractBearerToken, AuthError } from '../../lib/admin-auth.js';
 import { sendBrevoEmail } from '../../lib/brevo.js';
 import { computeQuarterFromDate, formatPlnFromGrosze } from '../../lib/admin-stats.js';
+import { requireEnv } from '../../lib/env.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,9 +13,18 @@ export default async function handler(req, res) {
     return;
   }
 
+  let env;
+  try {
+    env = requireEnv(['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'BREVO_API_KEY']);
+  } catch (err) {
+    console.error('Env config error:', err.message);
+    res.status(500).send(`Server misconfiguration: ${err.message}`);
+    return;
+  }
+
   const supabaseConfig = {
-    url: process.env.SUPABASE_URL,
-    serviceKey: process.env.SUPABASE_SERVICE_KEY,
+    url: env.SUPABASE_URL,
+    serviceKey: env.SUPABASE_SERVICE_KEY,
   };
 
   try {
@@ -50,7 +60,7 @@ export default async function handler(req, res) {
 
   try {
     await sendBrevoEmail({
-      apiKey: process.env.BREVO_API_KEY,
+      apiKey: env.BREVO_API_KEY,
       to,
       subject: `[TEST] VPS4U: alert kwartalny — to jest tylko test`,
       htmlContent: `

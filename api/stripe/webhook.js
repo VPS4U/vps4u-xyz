@@ -16,6 +16,7 @@ import { processStripeEvent } from '../../lib/stripe-webhook.js';
 import { checkAndAlertThresholds } from '../../lib/admin-alerts.js';
 import { sendBrevoEmail } from '../../lib/brevo.js';
 import { computeQuarterFromDate, formatPlnFromGrosze } from '../../lib/admin-stats.js';
+import { requireEnv } from '../../lib/env.js';
 
 export const config = {
   api: {
@@ -38,21 +39,36 @@ export default async function handler(req, res) {
     return;
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  let env;
+  try {
+    env = requireEnv([
+      'STRIPE_SECRET_KEY',
+      'STRIPE_WEBHOOK_SECRET',
+      'SUPABASE_URL',
+      'SUPABASE_SERVICE_KEY',
+      'BREVO_API_KEY',
+    ]);
+  } catch (err) {
+    console.error('Env config error:', err.message);
+    res.status(500).send(`Server misconfiguration: ${err.message}`);
+    return;
+  }
+
+  const stripe = new Stripe(env.STRIPE_SECRET_KEY);
   const signature = req.headers['stripe-signature'];
   const rawBody = await readRawBody(req);
 
   let event;
   try {
-    event = stripe.webhooks.constructEvent(rawBody, signature, process.env.STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(rawBody, signature, env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     res.status(400).send(`Webhook signature verification failed: ${err.message}`);
     return;
   }
 
   const supabase = createSupabaseAdmin({
-    url: process.env.SUPABASE_URL,
-    serviceKey: process.env.SUPABASE_SERVICE_KEY,
+    url: env.SUPABASE_URL,
+    serviceKey: env.SUPABASE_SERVICE_KEY,
   });
 
   try {
@@ -145,7 +161,7 @@ export default async function handler(req, res) {
             quarter,
           }) => {
             await sendBrevoEmail({
-              apiKey: process.env.BREVO_API_KEY,
+              apiKey: env.BREVO_API_KEY,
               to,
               subject: `VPS4U: kwartał ${quarter} — przekroczono ${threshold_pct}% capu`,
               htmlContent: `

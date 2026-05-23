@@ -4,6 +4,13 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #19] — 2026-05-23
+
+- Plan: miesięczny cap (równoległy do kwartalnego) — `docs/plans/monthly-cap-tracking.md`
+- Backlog w `docs/README.md` z dalszymi pomysłami (roczny cap, per-product, refundy, CSV export, rolling window, Slack notifications, Contabo provisioning, Revolut Pro)
+- `lib/env.js` z `requireEnv(names[])` — wczesna walidacja env vars; brak/pusta wartość → czytelny 500 "Missing required environment variables: X. Check Vercel project Settings → Environment Variables" zamiast późniejszego nieoczywistego "Brevo API 401". 4 testy
+- Wpięte w `/api/admin/settings`, `/api/admin/test-alert`, `/api/stripe/webhook`
+
 ## [PR #18] — 2026-05-23
 
 - **Stage 5**: admin self-service settings + test alert button
