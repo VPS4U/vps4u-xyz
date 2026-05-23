@@ -15,7 +15,8 @@ Wewnętrzna dokumentacja projektu. Czytaj w tej kolejności, jeśli widzisz to p
 ## Plany / RFC
 
 - [plans/revenue-cap-tracking.md](plans/revenue-cap-tracking.md) — admin tracking kwartalnych wpłat z alertami przez Brevo (zatwierdzony 2026-05-22, **zrealizowany** PR #5–#18)
-- [plans/monthly-cap-tracking.md](plans/monthly-cap-tracking.md) — miesięczny cap równoległy do kwartalnego (do zatwierdzenia, 2026-05-23)
+- [plans/monthly-cap-tracking.md](plans/monthly-cap-tracking.md) — miesięczny cap równoległy do kwartalnego (zatwierdzony 2026-05-23, **zrealizowany** PR #20–#22)
+- [plans/aggregator-reseller-mvp.md](plans/aggregator-reseller-mvp.md) — przerobienie strony na model agregator/reseller (do zatwierdzenia, 2026-05-24, bazuje na [vps-brief.md](vps-brief.md))
 
 ## Backlog (kolejne plany / pomysły)
 
