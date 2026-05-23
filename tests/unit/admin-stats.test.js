@@ -4,6 +4,7 @@ import {
   computeMonthFromDate,
   sumPaymentsPlnGrosze,
   groupByQuarter,
+  groupByMonth,
   formatPlnFromGrosze,
 } from '../../lib/admin-stats.js';
 
@@ -66,6 +67,24 @@ describe('groupByQuarter', () => {
 
   it('pusta lista = {}', () => {
     expect(groupByQuarter([])).toEqual({});
+  });
+});
+
+describe('groupByMonth', () => {
+  it('grupuje po polu month i sumuje', () => {
+    const payments = [
+      { month: '2026-05', amount_pln_grosze: 1000 },
+      { month: '2026-05', amount_pln_grosze: 2000 },
+      { month: '2026-04', amount_pln_grosze: 5000 },
+    ];
+    expect(groupByMonth(payments)).toEqual({
+      '2026-05': { count: 2, total_pln_grosze: 3000 },
+      '2026-04': { count: 1, total_pln_grosze: 5000 },
+    });
+  });
+
+  it('pusta lista = {}', () => {
+    expect(groupByMonth([])).toEqual({});
   });
 });
 
