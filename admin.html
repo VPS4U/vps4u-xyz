@@ -78,10 +78,30 @@
           <div class="progress-bar" id="progress-bar" style="width:0%"></div>
           <span class="progress-label" id="progress-label">0%</span>
         </div>
-        <p style="margin: 16px 0 0; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em">
-          // Cap na razie hardcoded w admin.html (50 000 PLN). Settings UI dochodzi w Stage 5.
-        </p>
       </div>
+    </section>
+
+    <section class="admin-section">
+      <h2>Ustawienia capa i alertów</h2>
+      <form id="settings-form" class="quarter-card" style="display:flex; flex-direction:column; gap:16px">
+        <div>
+          <label for="settings-cap" style="display:block; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px">Cap kwartalny (PLN)</label>
+          <input type="number" id="settings-cap" min="1" step="1" required style="width:200px; padding:8px 12px; border:1.5px solid var(--ink); font-family:'JetBrains Mono',monospace; font-size:16px" />
+        </div>
+        <div>
+          <label style="display:block; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px">Progi alertów (%)</label>
+          <div id="settings-thresholds" style="display:flex; gap:12px; flex-wrap:wrap"></div>
+        </div>
+        <div>
+          <label for="settings-email" style="display:block; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px">Email odbiorczy alertów</label>
+          <input type="email" id="settings-email" required style="width:300px; padding:8px 12px; border:1.5px solid var(--ink); font-family:'JetBrains Mono',monospace; font-size:14px" />
+        </div>
+        <div style="display:flex; gap:12px; align-items:center; margin-top:8px">
+          <button type="submit" class="btn btn-primary" style="padding:10px 20px">Zapisz</button>
+          <button type="button" id="test-alert-btn" class="btn" style="padding:10px 20px; background:var(--ink); color:var(--cream)">Wyślij testowy mail</button>
+          <span id="settings-status" style="font-family:'JetBrains Mono',monospace; font-size:12px"></span>
+        </div>
+      </form>
     </section>
 
     <section class="admin-section">
@@ -135,8 +155,7 @@
   const loading = document.getElementById('loading');
   const content = document.getElementById('content');
 
-  // Hardcoded cap kwartalny — settings UI dochodzi w Stage 5.
-  const QUARTERLY_CAP_GROSZE = 5_000_000; // 50 000 PLN
+  const ALL_THRESHOLDS = [25, 50, 75, 80, 90, 100];
 
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -159,8 +178,19 @@
 
   document.getElementById('user-email').textContent = profile.email;
 
+  // Pobierz settings (cap, thresholds, email) — admin RLS pozwala.
+  const { data: settingsRows, error: settingsErr } = await supabase
+    .from('admin_settings')
+    .select('key, value');
+  if (settingsErr) {
+    console.error('Nie udało się pobrać admin_settings:', settingsErr);
+  }
+  const settingsMap = Object.fromEntries((settingsRows ?? []).map((r) => [r.key, r.value]));
+  const QUARTERLY_CAP_GROSZE = settingsMap.quarterly_cap?.grosze ?? 5_000_000;
+  const currentThresholds = settingsMap.alert_thresholds_pct ?? [50, 80, 100];
+  const currentAlertEmail = settingsMap.alert_email ?? '';
+
   // Pobierz wszystkie płatności (RLS odda wszystko jeśli admin).
-  // Dla MVP ładujemy wszystko; w przyszłości paginacja jeśli ruch urośnie.
   const { data: allPayments, error: paymentsErr } = await supabase
     .from('payments')
     .select('id, provider, external_charge_id, amount_cents, currency, amount_pln_grosze, fx_rate, charged_at, quarter')
@@ -183,6 +213,67 @@
   document.getElementById('current-count').textContent = currentPayments.length;
   document.getElementById('current-cap').textContent = formatPlnFromGrosze(QUARTERLY_CAP_GROSZE);
   document.getElementById('current-pct').textContent = pct.toFixed(1);
+
+  // Settings form: prefill
+  document.getElementById('settings-cap').value = Math.round(QUARTERLY_CAP_GROSZE / 100);
+  document.getElementById('settings-email').value = currentAlertEmail;
+  const thresholdsEl = document.getElementById('settings-thresholds');
+  thresholdsEl.innerHTML = ALL_THRESHOLDS.map((t) => `
+    <label style="display:flex; align-items:center; gap:6px; cursor:pointer">
+      <input type="checkbox" name="threshold" value="${t}" ${currentThresholds.includes(t) ? 'checked' : ''} />
+      <span style="font-family:'JetBrains Mono',monospace; font-size:13px">${t}%</span>
+    </label>
+  `).join('');
+
+  // Save handler
+  const setStatus = (msg, color) => {
+    const el = document.getElementById('settings-status');
+    el.textContent = msg;
+    el.style.color = color;
+  };
+
+  document.getElementById('settings-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    setStatus('Zapisuję…', 'var(--ink)');
+    const capPln = Number(document.getElementById('settings-cap').value);
+    const thresholds = [...document.querySelectorAll('input[name="threshold"]:checked')].map((el) => Number(el.value));
+    const email = document.getElementById('settings-email').value.trim();
+
+    const res = await fetch('/api/admin/settings', {
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/json',
+        'authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        quarterly_cap: { grosze: capPln * 100, currency: 'pln' },
+        alert_thresholds_pct: thresholds,
+        alert_email: email,
+      }),
+    });
+
+    if (res.ok) {
+      setStatus('✓ Zapisano. Reload strony żeby zobaczyć nowy cap w bieżącym kwartale.', 'var(--ok, #1f7a3a)');
+    } else {
+      const text = await res.text();
+      setStatus(`✗ Błąd: ${text}`, 'var(--accent)');
+    }
+  });
+
+  document.getElementById('test-alert-btn').addEventListener('click', async () => {
+    setStatus('Wysyłam testowy mail…', 'var(--ink)');
+    const res = await fetch('/api/admin/test-alert', {
+      method: 'POST',
+      headers: { 'authorization': `Bearer ${session.access_token}` },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setStatus(`✓ Mail wysłany na ${data.sent_to}`, 'var(--ok, #1f7a3a)');
+    } else {
+      const text = await res.text();
+      setStatus(`✗ ${text}`, 'var(--accent)');
+    }
+  });
 
   const bar = document.getElementById('progress-bar');
   bar.style.width = `${Math.min(pct, 100)}%`;

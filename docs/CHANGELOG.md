@@ -4,6 +4,17 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #18] — 2026-05-23
+
+- **Stage 5**: admin self-service settings + test alert button
+- `lib/admin-settings-validate.js` — `validateSettingsPayload`: walidacja capa (positive int grosze, currency=pln), thresholds (int 1..100, dedup+sort), email (regex). 7 testów
+- `lib/admin-auth.js` — `requireAdmin(token, supabaseConfig)`: weryfikacja JWT przez Supabase + check `is_admin`; `extractBearerToken(headers)`. 5 testów dla extractora
+- `api/admin/settings.js` — PUT endpoint: auth (Bearer JWT) + validate + upsert do `admin_settings`
+- `api/admin/test-alert.js` — POST: wysyła testowy mail przez Brevo z bieżącymi settings, pomija `alert_log`
+- `admin.html` — nowy formularz Settings: cap PLN (input number), thresholds (6 checkboxów: 25/50/75/80/90/100), email; przycisk "Wyślij testowy mail"
+- Usunięty hardcoded `QUARTERLY_CAP_GROSZE` — teraz ładowany z `admin_settings` przez Supabase
+- Total: **51 unit** + 8 E2E zielone
+
 ## [PR #17] — 2026-05-22
 
 - **Stage 4**: threshold alerts przez Brevo
