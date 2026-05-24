@@ -138,6 +138,22 @@
     </section>
 
     <section class="admin-section">
+      <h2>Setup Stripe (Stage 7.2)</h2>
+      <div class="quarter-card" style="display:flex; flex-direction:column; gap:12px">
+        <p style="margin:0; font-size:14px">
+          Tworzy w Stripe Products + Prices dla wszystkich aktywnych konfiguracji w bazie (~90 produktów × 2-4 cen).
+          <strong>Idempotent</strong> — pomija jeśli IDs już zapisane w DB. Bezpieczne do ponownego uruchomienia.
+        </p>
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+          <button type="button" id="setup-stripe-dry-btn" class="btn" style="padding:10px 20px; background:var(--ink); color:var(--cream)">Dry-run (podgląd)</button>
+          <button type="button" id="setup-stripe-btn" class="btn btn-primary" style="padding:10px 20px">Wykonaj setup</button>
+          <span id="setup-stripe-status" style="font-family:'JetBrains Mono',monospace; font-size:12px"></span>
+        </div>
+        <pre id="setup-stripe-result" style="margin:0; padding:12px; background:var(--ink); color:var(--cream); font-family:'JetBrains Mono',monospace; font-size:11px; overflow:auto; display:none"></pre>
+      </div>
+    </section>
+
+    <section class="admin-section">
       <h2>Ostatnie 6 miesięcy</h2>
       <table class="admin-table" id="months-table">
         <thead>
@@ -345,6 +361,44 @@
       setStatus(`✗ Błąd: ${text}`, 'var(--accent)');
     }
   });
+
+  // Setup Stripe — dry-run i pełne wykonanie
+  const setupStatus = document.getElementById('setup-stripe-status');
+  const setupResult = document.getElementById('setup-stripe-result');
+  const runSetupStripe = async (dryRun) => {
+    if (!dryRun && !confirm(
+      'Uruchamiasz setup Stripe — ~90 Products + ~310 Prices zostanie utworzonych w trybie ' +
+      'wskazanym przez STRIPE_SECRET_KEY w Vercel env. Idempotent (kolejne uruchomienia nic ' +
+      'nowego nie dodadzą jeśli IDs są już w DB). Kontynuować?'
+    )) return;
+
+    setupStatus.textContent = dryRun ? 'Dry-run w toku…' : 'Setup w toku (~15-30s)…';
+    setupStatus.style.color = 'var(--ink)';
+    setupResult.style.display = 'none';
+
+    const res = await fetch('/api/admin/setup-stripe', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ dry_run: dryRun }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setupStatus.textContent = `✓ ${dryRun ? 'Dry-run OK' : 'Setup OK'} (mode: ${data.mode})`;
+      setupStatus.style.color = 'var(--ok, #1f7a3a)';
+      setupResult.textContent = JSON.stringify(data, null, 2);
+      setupResult.style.display = 'block';
+    } else {
+      const text = await res.text();
+      setupStatus.textContent = `✗ Błąd: ${text}`;
+      setupStatus.style.color = 'var(--accent)';
+    }
+  };
+  document.getElementById('setup-stripe-dry-btn').addEventListener('click', () => runSetupStripe(true));
+  document.getElementById('setup-stripe-btn').addEventListener('click', () => runSetupStripe(false));
 
   document.getElementById('test-alert-btn').addEventListener('click', async () => {
     setStatus('Wysyłam testowy mail…', 'var(--ink)');
