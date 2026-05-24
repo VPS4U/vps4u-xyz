@@ -4,6 +4,24 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #26] — 2026-05-24
+
+- **Stage 7.2**: setup script Stripe — tworzy Products + Prices dla wszystkich aktywnych konfiguracji
+- `lib/stripe-products.js` — pure helpers do budowy Stripe data:
+  - `makeInternalSku(config)` — `czarny-L+S+D-X` (sortowane addons → idempotent)
+  - `buildProductData(config)` — name, description, metadata.internal_sku do lookupu
+  - `buildPriceData(config, period, currency)` — Stripe Price z `lookup_key` = `{sku}-{period}-{currency}`
+  - `listPriceVariants(config)` — 4 warianty (monthly×eur/pln + yearly×eur/pln, pomija null)
+- `scripts/setup-stripe.js` — CLI orchestrator:
+  - Wczytuje aktywne configs z Supabase (z joinami line+provider)
+  - Dla każdego: tworzy Product (jeśli `stripe_product_id` puste), potem 2-4 Prices (jeśli puste)
+  - **Idempotent** — pomija jeśli IDs już w DB
+  - Wspiera DRY_RUN=1 do podglądu
+  - Auto-detect Test vs Live mode (po prefixie sk_test_/sk_live_)
+- `package.json` — nowe komendy `npm run setup:stripe` i `setup:stripe:dry`
+- `eslint.config.js` — dodano `scripts/**/*.js` do lintingu
+- 11 nowych unit testów, total **90 unit + 8 E2E** zielone
+
 ## [PR #25] — 2026-05-24
 
 - **Stage 7.1**: schema produktów dla modelu agregatora (z planu aggregator-reseller-mvp)
