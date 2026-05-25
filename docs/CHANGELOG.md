@@ -4,6 +4,20 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #32] — 2026-05-25
+
+- **Stage 7.5**: porównywarka MVP (`/porownaj`)
+- `porownaj.html` — tabela 6 linii (kolumny) × 9 cech (wiersze): cena od, CPU/RAM/dysk bazowy, transfer, lokalizacje, backup, anti-DDoS, polski support
+- Filtry interaktywne (vanilla JS, bez reload):
+  - **Cena max** — slider 10-40 €/mc (ukrywa kolumny droższe)
+  - **Lokalizacja** — checkboxy z krajów (PL/DE/FR/UK/NL/LT/FI/EU) wygenerowane dynamicznie z DB
+  - **Backup wymagany** — toggle
+  - "Reset filtrów"
+- Każda kolumna ma w stopce CTA "Wybierz →" do `/konfigurator?line={sku}`
+- Dane fetchowane z Supabase z `product_lines` + min cena per linia (z `product_configurations`)
+- Link z `konfigurator.html` line picker → `/porownaj`
+- Smoke E2E rozszerzony (11/11 zielone)
+
 ## [PR #31] — 2026-05-25
 
 - `docs/email-templates/` — polskie szablony HTML dla Supabase Auth (do skopiowania w UI)
