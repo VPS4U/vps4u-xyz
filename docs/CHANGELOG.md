@@ -13,6 +13,12 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 - `tests/unit/stripe-webhook.test.js` — 2 nowe testy: `onOrderConfirmed` wywoływane z pełną sesją + NIE wywoływane gdy brak email/customer
 - **Działanie po deploy**: replay testowej transakcji z Stripe Dashboard → Webhooks → Resend event. Nowa transakcja: payment row + 2 maile + dashboard %cap
 
+## [PR #34] — 2026-05-25
+
+- Hotfix `api/checkout/create.js` — usunięty `customer_creation: 'always'`
+- Powód: parametr jest dozwolony tylko dla mode='payment'; dla mode='subscription' Stripe zwracał błąd `customer_creation can only be used in payment mode`. Subskrypcje i tak automatycznie tworzą customer
+- Bug ujawnił się przy pierwszym realnym Stripe Checkout (E2E test flow)
+
 ## [PR #33] — 2026-05-25
 
 - **Stage 7.6**: refresh strony głównej — model agregatora widoczny w UI + kolory linii (klienci znają je z poprzedniego brand'u)

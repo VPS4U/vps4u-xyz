@@ -97,9 +97,10 @@ export default async function handler(req, res) {
       line_items: [{ price: stripePriceId, quantity: 1 }],
       success_url: `${baseUrl}/dziekujemy?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/konfigurator?line=${payload.line_sku}`,
-      // Stripe Tax + customer email zbierany przez Stripe Checkout UI
+      // Stripe Tax + customer email zbierany przez Stripe Checkout UI.
+      // `customer_creation` nie używamy — dla mode='subscription' Stripe i tak tworzy customer automatycznie
+      // (param jest dozwolony tylko dla mode='payment').
       automatic_tax: { enabled: true },
-      customer_creation: 'always',
       billing_address_collection: 'required',
       metadata: {
         line_sku: payload.line_sku,
