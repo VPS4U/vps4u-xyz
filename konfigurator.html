@@ -136,7 +136,7 @@
 <script src="cookie-banner.js"></script>
 <script type="module">
   import { supabase } from '/lib/supabase.js';
-  import { formatHardwareLabel, formatPricePln, formatPriceEur } from '/lib/pricing.js';
+  import { formatHardwareLabel, formatPricePln, formatPriceEur, getLineColor } from '/lib/pricing.js';
 
   const ADDON_LABELS = {
     X: { label: 'Rozszerzona sieć', desc: '+1 IPv4 / lepszy port' },
@@ -180,14 +180,22 @@
       if (!minByLine[sku]) minByLine[sku] = r.price_monthly_eur_cents;
     }
 
-    document.getElementById('lines-grid').innerHTML = lines.map((l) => `
-      <a href="konfigurator?line=${l.sku_code}" class="cfg-line-card">
+    document.getElementById('lines-grid').innerHTML = lines.map((l) => {
+      const c = getLineColor(l.sku_code);
+      const borderColor = l.sku_code === 'bialy' ? '#0a0a0a' : c.hex;
+      return `
+      <a href="konfigurator?line=${l.sku_code}" class="cfg-line-card" style="border-top:6px solid ${borderColor}">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px">
+          <span style="display:inline-block; width:14px; height:14px; background:${c.hex}; border:1.5px solid #0a0a0a"></span>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)">Linia ${c.label}</span>
+        </div>
         <div class="marketing">${l.marketing_name}</div>
         <div class="provider">Powered by ${l.provider_info.name}</div>
         <div class="from-price">od <strong>${formatPriceEur(minByLine[l.sku_code] ?? 0)}</strong> / mies.</div>
         <div class="position">${l.positioning ?? ''}</div>
       </a>
-    `).join('');
+    `;
+    }).join('');
   }
 
   // ============ Widok 2: konfigurator linii ============
@@ -215,6 +223,19 @@
 
     document.getElementById('loading').style.display = 'none';
     document.getElementById('view-configurator').style.display = 'block';
+
+    const lineColor = getLineColor(sku);
+    const borderColor = sku === 'bialy' ? '#0a0a0a' : lineColor.hex;
+    // Color stripe + label przed h1
+    const headEl = document.querySelector('#view-configurator .cfg-head');
+    if (headEl) {
+      headEl.style.borderTop = `8px solid ${borderColor}`;
+      headEl.style.paddingTop = '20px';
+      const labelEl = document.createElement('div');
+      labelEl.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:8px';
+      labelEl.innerHTML = `<span style="display:inline-block; width:14px; height:14px; background:${lineColor.hex}; border:1.5px solid #0a0a0a"></span><span style="font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)">Linia ${lineColor.label}</span>`;
+      headEl.insertBefore(labelEl, headEl.firstElementChild);
+    }
 
     document.getElementById('line-marketing').textContent = line.marketing_name;
     document.getElementById('line-provider').textContent = `Powered by ${line.provider_info.name} · ${(line.locations ?? []).join(', ') || ''}`;

@@ -3,7 +3,7 @@
 // ============================================================
 const I18N = {
   pl: {
-    nav: { vps: "VPS", services: "Usługi", pricing: "Cennik", panel: "Panel", blog: "Blog", login: "Logowanie", signup: "Załóż konto" },
+    nav: { vps: "VPS", services: "Usługi", pricing: "Cennik", panel: "Panel", blog: "Blog", login: "Logowanie", signup: "Konfiguruj", compare: "Porównaj" },
     ticker: [
       "99.99% UPTIME", "INFRASTRUKTURA • CONTABO • DE / USA / SG",
       "NVMe GEN4 W STANDARDZIE", "DDOS PROTECTION 24/7",
@@ -56,24 +56,25 @@ const I18N = {
       ],
     },
     pricing: {
-      num: "02 / PLANY VPS",
-      title: ["Wybierz rozmiar.", { i: " Skaluj kiedy chcesz." }],
-      lede: "Sześć planów. Każdy z gwarancją zwrotu w 30 dni. Bez zobowiązań długoterminowych.",
+      num: "02 / LINIE VPS",
+      title: ["6 dostawców.", { i: " Jeden polski support." }],
+      lede: "Każda linia to inny dostawca infrastruktury — od najtańszych dev/test do enterprise z SLA 99.99%. Powered by Hetzner / Contabo / Hostinger / OVH.",
       toggle: { m: "Miesięcznie", y: "Rocznie", save: "−20%" },
       perMo: "/ mies.",
       featured: "POLECANY",
-      cta: "Zamów",
+      cta: "Konfiguruj",
+      compareCta: "Porównaj wszystkie linie",
       features: [
-        "Konfiguracja w 47s", "NVMe Gen4", "Snapshot codziennie",
-        "DDoS w cenie", "1 IPv4 + IPv6", "Panel WWW", "Migracja gratis", "API + Terraform", "Wsparcie PL/EN",
+        "Polski support", "Backup dostępny", "Anti-DDoS w cenie", "Konfiguracja w 47s",
+        "Migracja gratis", "Panel klienta po PL", "1 IPv4 + IPv6", "Skalowanie w trakcie",
       ],
       plans: [
-        { name: "Mikro", cpu: "1 vCPU", ram: "1 GB", disk: "20 GB", net: "1 TB / 1 Gbps", price: 4, feats: [0,1,2,3,4] },
-        { name: "Mały", cpu: "2 vCPU", ram: "4 GB", disk: "60 GB", net: "3 TB / 1 Gbps", price: 9, feats: [0,1,2,3,4,5] },
-        { name: "Średni", cpu: "4 vCPU", ram: "8 GB", disk: "120 GB", net: "5 TB / 2.5 Gbps", price: 19, feats: [0,1,2,3,4,5,6], featured: true },
-        { name: "Duży", cpu: "6 vCPU", ram: "16 GB", disk: "240 GB", net: "10 TB / 2.5 Gbps", price: 39, feats: [0,1,2,3,4,5,6,7] },
-        { name: "XL", cpu: "12 vCPU", ram: "32 GB", disk: "480 GB", net: "20 TB / 10 Gbps", price: 79, feats: [0,1,2,3,4,5,6,7,8] },
-        { name: "Mocarz", cpu: "24 vCPU", ram: "64 GB", disk: "960 GB", net: "Unmetered / 10 Gbps", price: 159, feats: [0,1,2,3,4,5,6,7,8] },
+        { sku: "gold",      name: "Cloud Lite",        provider: "Hetzner CX",  cpu: "2 vCPU", ram: "4 GB",  disk: "80 GB",  net: "20 TB",  price: 15, feats: [0,3,6,7], url: "konfigurator.html?line=gold" },
+        { sku: "orange",    name: "Cloud Standard",    provider: "Contabo",     cpu: "2 vCPU", ram: "4 GB",  disk: "80 GB",  net: "32 TB",  price: 18, feats: [0,3,6,7], url: "konfigurator.html?line=orange" },
+        { sku: "czarny",    name: "Cloud Business",    provider: "Hetzner CPX", cpu: "2 vCPU", ram: "4 GB",  disk: "80 GB",  net: "20 TB",  price: 20, feats: [0,1,3,5,6,7], featured: true, url: "konfigurator.html?line=czarny" },
+        { sku: "bialy",     name: "Cloud Performance", provider: "Hostinger",   cpu: "2 vCPU", ram: "4 GB",  disk: "80 GB",  net: "4 TB",   price: 20, feats: [0,1,3,5,6,7], url: "konfigurator.html?line=bialy" },
+        { sku: "czerwony",  name: "Cloud Pro",         provider: "OVH Value",   cpu: "2 vCPU", ram: "4 GB",  disk: "80 GB",  net: "∞",      price: 23, feats: [0,1,2,4,5,6,7], url: "konfigurator.html?line=czerwony" },
+        { sku: "niebieski", name: "Cloud Enterprise",  provider: "OVH Comfort", cpu: "2 vCPU", ram: "4 GB",  disk: "80 GB",  net: "∞",      price: 36, feats: [0,1,2,4,5,6,7], url: "konfigurator.html?line=niebieski" },
       ],
     },
     svc: {
@@ -250,7 +251,7 @@ const I18N = {
     },
   },
   en: {
-    nav: { vps: "VPS", services: "Services", pricing: "Pricing", panel: "Dashboard", blog: "Blog", login: "Log in", signup: "Sign up" },
+    nav: { vps: "VPS", services: "Services", pricing: "Pricing", panel: "Dashboard", blog: "Blog", login: "Log in", signup: "Configure", compare: "Compare" },
     ticker: [
       "99.99% UPTIME", "INFRASTRUCTURE • CONTABO • DE / US / SG",
       "NVMe GEN4 BY DEFAULT", "DDOS PROTECTION 24/7",
@@ -303,24 +304,25 @@ const I18N = {
       ],
     },
     pricing: {
-      num: "02 / VPS PLANS",
-      title: ["Pick a size.", { i: " Scale whenever." }],
-      lede: "Six plans. Each with a 30-day money-back guarantee. No long-term lock-in.",
+      num: "02 / VPS LINES",
+      title: ["6 providers.", { i: " One Polish support." }],
+      lede: "Each line is a different infrastructure provider — from cheapest dev/test to enterprise with 99.99% SLA. Powered by Hetzner / Contabo / Hostinger / OVH.",
       toggle: { m: "Monthly", y: "Yearly", save: "−20%" },
       perMo: "/ mo",
       featured: "POPULAR",
-      cta: "Order",
+      cta: "Configure",
+      compareCta: "Compare all lines",
       features: [
-        "Up in 47s", "NVMe Gen4", "Daily snapshot",
-        "DDoS included", "1 IPv4 + IPv6", "Web panel", "Free migration", "API + Terraform", "PL/EN support",
+        "Polish support", "Backup available", "DDoS included", "Up in 47s",
+        "Free migration", "Customer panel in PL", "1 IPv4 + IPv6", "Scale anytime",
       ],
       plans: [
-        { name: "Micro", cpu: "1 vCPU", ram: "1 GB", disk: "20 GB", net: "1 TB / 1 Gbps", price: 4, feats: [0,1,2,3,4], stripe: "https://buy.stripe.com/REPLACE_WITH_STRIPE_LINK_MICRO" },
-        { name: "Small", cpu: "2 vCPU", ram: "4 GB", disk: "60 GB", net: "3 TB / 1 Gbps", price: 9, feats: [0,1,2,3,4,5], stripe: "https://buy.stripe.com/REPLACE_WITH_STRIPE_LINK_SMALL" },
-        { name: "Medium", cpu: "4 vCPU", ram: "8 GB", disk: "120 GB", net: "5 TB / 2.5 Gbps", price: 19, feats: [0,1,2,3,4,5,6], featured: true, stripe: "https://buy.stripe.com/REPLACE_WITH_STRIPE_LINK_MEDIUM" },
-        { name: "Large", cpu: "6 vCPU", ram: "16 GB", disk: "240 GB", net: "10 TB / 2.5 Gbps", price: 39, feats: [0,1,2,3,4,5,6,7], stripe: "https://buy.stripe.com/REPLACE_WITH_STRIPE_LINK_LARGE" },
-        { name: "XL", cpu: "12 vCPU", ram: "32 GB", disk: "480 GB", net: "20 TB / 10 Gbps", price: 79, feats: [0,1,2,3,4,5,6,7,8], stripe: "https://buy.stripe.com/REPLACE_WITH_STRIPE_LINK_XL" },
-        { name: "Beast", cpu: "24 vCPU", ram: "64 GB", disk: "960 GB", net: "Unmetered / 10 Gbps", price: 159, feats: [0,1,2,3,4,5,6,7,8], stripe: "https://buy.stripe.com/REPLACE_WITH_STRIPE_LINK_BEAST" },
+        { sku: "gold",      name: "Cloud Lite",        provider: "Hetzner CX",  cpu: "2 vCPU", ram: "4 GB", disk: "80 GB",  net: "20 TB", price: 15, feats: [0,3,6,7], url: "konfigurator.html?line=gold" },
+        { sku: "orange",    name: "Cloud Standard",    provider: "Contabo",     cpu: "2 vCPU", ram: "4 GB", disk: "80 GB",  net: "32 TB", price: 18, feats: [0,3,6,7], url: "konfigurator.html?line=orange" },
+        { sku: "czarny",    name: "Cloud Business",    provider: "Hetzner CPX", cpu: "2 vCPU", ram: "4 GB", disk: "80 GB",  net: "20 TB", price: 20, feats: [0,1,3,5,6,7], featured: true, url: "konfigurator.html?line=czarny" },
+        { sku: "bialy",     name: "Cloud Performance", provider: "Hostinger",   cpu: "2 vCPU", ram: "4 GB", disk: "80 GB",  net: "4 TB",  price: 20, feats: [0,1,3,5,6,7], url: "konfigurator.html?line=bialy" },
+        { sku: "czerwony",  name: "Cloud Pro",         provider: "OVH Value",   cpu: "2 vCPU", ram: "4 GB", disk: "80 GB",  net: "∞",     price: 23, feats: [0,1,2,4,5,6,7], url: "konfigurator.html?line=czerwony" },
+        { sku: "niebieski", name: "Cloud Enterprise",  provider: "OVH Comfort", cpu: "2 vCPU", ram: "4 GB", disk: "80 GB",  net: "∞",     price: 36, feats: [0,1,2,4,5,6,7], url: "konfigurator.html?line=niebieski" },
       ],
     },
     svc: {

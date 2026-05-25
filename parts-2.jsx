@@ -66,6 +66,16 @@ function StackIcon({ i }) {
   }
 }
 
+// Inline mapping (parts-2.jsx jest ładowany jako JSX-w-przeglądarce, nie ES module — bez importu)
+const LINE_COLORS_INLINE = {
+  gold:      { hex: '#C9A348', label: 'Gold' },
+  orange:    { hex: '#E07B00', label: 'Orange' },
+  czarny:    { hex: '#0a0a0a', label: 'Czarny' },
+  bialy:     { hex: '#FFFFFF', label: 'Biały' },
+  czerwony:  { hex: '#C8332E', label: 'Czerwony' },
+  niebieski: { hex: '#1F4E8F', label: 'Niebieski' },
+};
+
 function Pricing({ t }) {
   const [yearly, setYearly] = useState(false);
   return (
@@ -84,12 +94,19 @@ function Pricing({ t }) {
       <div className="plans">
         {t.pricing.plans.map((p, i) => {
           const price = yearly ? (p.price * 0.8).toFixed(0) : p.price;
+          const color = LINE_COLORS_INLINE[p.sku] || { hex: '#888', label: p.sku };
+          const borderColor = p.sku === 'bialy' ? '#0a0a0a' : color.hex;
           return (
-            <div key={i} className={"plan" + (p.featured ? " featured" : "")}>
+            <div key={i} className={"plan" + (p.featured ? " featured" : "")} style={{borderTop: `6px solid ${borderColor}`}}>
               {p.featured && <div className="plan-tag">{t.pricing.featured}</div>}
+              <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:6}}>
+                <span style={{display:'inline-block', width:14, height:14, background:color.hex, border:'1.5px solid #0a0a0a'}}></span>
+                <span style={{fontFamily:"'JetBrains Mono',monospace", fontSize:11, textTransform:'uppercase', letterSpacing:'.06em', color:'var(--muted)'}}>Linia {color.label}</span>
+              </div>
               <div className="plan-name">{p.name}</div>
+              {p.provider && <div style={{fontFamily:"'JetBrains Mono',monospace", fontSize:11, color:'var(--muted)', textTransform:'uppercase', letterSpacing:'.08em', marginTop:4}}>Powered by {p.provider}</div>}
               <div className="plan-price">
-                <span className="cur">€</span>
+                <span className="cur" style={{fontSize:14, marginRight:2}}>od €</span>
                 <span className="amt">{price}</span>
                 <span className="per">{t.pricing.perMo}</span>
               </div>
@@ -102,10 +119,13 @@ function Pricing({ t }) {
               <ul className="feat-list">
                 {p.feats.map(fi => (<li key={fi}>{t.pricing.features[fi]}</li>))}
               </ul>
-              <a href={p.stripe || "rejestracja.html"} target={p.stripe ? "_blank" : undefined} rel={p.stripe ? "noopener" : undefined} className={"btn " + (p.featured ? "btn-primary" : "")}>{t.pricing.cta} →</a>
+              <a href={p.url || "konfigurator.html"} className={"btn " + (p.featured ? "btn-primary" : "")}>{t.pricing.cta} →</a>
             </div>
           );
         })}
+      </div>
+      <div style={{textAlign:'center', marginTop:32}}>
+        <a href="porownaj.html" style={{fontFamily:"'JetBrains Mono',monospace", fontSize:14, color:'var(--accent)', borderBottom:'1.5px solid var(--accent)', paddingBottom:1}}>{t.pricing.compareCta || 'Porównaj wszystkie linie'} →</a>
       </div>
     </section>
   );
