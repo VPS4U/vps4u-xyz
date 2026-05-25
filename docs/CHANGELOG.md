@@ -4,6 +4,14 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #27] — 2026-05-25
+
+- `admin.html` — nowa sekcja "Stripe — stan synchronizacji"
+- Pokazuje na żywo z DB (admin RLS): products synced / total, monthly EUR/PLN, yearly EUR/PLN (z `expected` jako dzielnik bo niektóre combo nie mają yearly), tabela per linia z postępem %
+- Przycisk "Odśwież" + auto-reload po sukcesie setup
+- Pomaga zobaczyć ile jeszcze brakuje przy timeout'ach Vercel (po każdym kliknięciu "Wykonaj setup" widać progres)
+- Brak nowych endpointów ani migracji — pure frontend query
+
 ## [PR #26] — 2026-05-24
 
 - **Stage 7.2**: Stripe setup — tworzy Products + Prices dla wszystkich aktywnych konfiguracji
