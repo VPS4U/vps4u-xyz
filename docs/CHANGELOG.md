@@ -4,6 +4,16 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #36] — 2026-05-25
+
+- **Fix maili potwierdzających** (po feedbacku: admin nie dostał maila + brak oznaczeń znanych klientom)
+- `api/stripe/webhook.js` — w obu mailach (klient + admin) widać teraz:
+  - **Kolor linii**: swatch HTML w kolorze + label "Linia Czarny" (z `getLineColor(sku).label`); obok marketing name w nawiasie
+  - **Surowe kody konfiguracji**: `L + S + D` (hardware_combo + addons) w `<code>` styled bloczku; obok marketing label "Performance + Automatyczny backup" w nawiasie
+  - Subject zawiera teraz kolor + kody (`Dziękujemy za zamówienie — Linia Czarny L+S+D`)
+- Logging: `console.log` po sukcesie wysyłki klient/admin + `console.warn` z powodem gdy admin pominięty (brak `alert_email` lub równy klientowi) — łatwiejszy debug w Vercel logs
+- **Why**: migracja klientów ze starego sklepu, gdzie identyfikacja produktu = kolor linii + kody (L,S,D,X,A); marketing labels typu "Performance" są nowe
+
 ## [PR #35] — 2026-05-25
 
 - **Fix krytyczny E2E**: webhook Stripe nie zapisywał płatności do `payments` (bug znaleziony przy testowej transakcji €200+ — log `Profile not found for stripe_customer_id`)
