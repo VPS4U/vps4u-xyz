@@ -138,11 +138,17 @@
     </section>
 
     <section class="admin-section">
+      <h2>Stripe — stan synchronizacji</h2>
+      <div id="stripe-overview" class="quarter-card panel-loading" style="display:block">// Ładuję…</div>
+    </section>
+
+    <section class="admin-section">
       <h2>Setup Stripe (Stage 7.2)</h2>
       <div class="quarter-card" style="display:flex; flex-direction:column; gap:12px">
         <p style="margin:0; font-size:14px">
           Tworzy w Stripe Products + Prices dla wszystkich aktywnych konfiguracji w bazie (~90 produktów × 2-4 cen).
           <strong>Idempotent</strong> — pomija jeśli IDs już zapisane w DB. Bezpieczne do ponownego uruchomienia.
+          Przy timeout (Vercel ~10s) klikaj wielokrotnie — każde wywołanie kontynuuje od ostatniego punktu.
         </p>
         <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
           <button type="button" id="setup-stripe-dry-btn" class="btn" style="padding:10px 20px; background:var(--ink); color:var(--cream)">Dry-run (podgląd)</button>
@@ -362,6 +368,86 @@
     }
   });
 
+  // Stripe sync overview — DB query (admin RLS pozwala)
+  async function renderStripeOverview() {
+    const el = document.getElementById('stripe-overview');
+    el.textContent = '// Ładuję…';
+
+    const { data, error } = await supabase
+      .from('product_configurations')
+      .select(`hardware_combo, addons, stripe_product_id, stripe_price_monthly_eur_id, stripe_price_monthly_pln_id, stripe_price_yearly_eur_id, stripe_price_yearly_pln_id, price_yearly_eur_cents, price_yearly_pln_grosze, product_lines!inner(sku_code, marketing_name)`)
+      .eq('active', true);
+
+    if (error) {
+      el.innerHTML = `<span style="color:var(--accent)">Błąd ładowania: ${error.message}</span>`;
+      return;
+    }
+
+    let totalProducts = 0, mEur = 0, mPln = 0, yEur = 0, yPln = 0;
+    let expectedYEur = 0, expectedYPln = 0;
+    const perLine = {};
+
+    for (const r of data) {
+      const sku = r.product_lines.sku_code;
+      if (!perLine[sku]) perLine[sku] = { name: r.product_lines.marketing_name, total: 0, synced: 0 };
+      perLine[sku].total += 1;
+      if (r.stripe_product_id) { perLine[sku].synced += 1; totalProducts += 1; }
+      if (r.stripe_price_monthly_eur_id) mEur += 1;
+      if (r.stripe_price_monthly_pln_id) mPln += 1;
+      if (r.price_yearly_eur_cents) expectedYEur += 1;
+      if (r.stripe_price_yearly_eur_id) yEur += 1;
+      if (r.price_yearly_pln_grosze) expectedYPln += 1;
+      if (r.stripe_price_yearly_pln_id) yPln += 1;
+    }
+
+    const total = data.length;
+    const pct = total ? Math.round((totalProducts / total) * 100) : 0;
+    const lineRows = Object.entries(perLine)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([sku, info]) => {
+        const linePct = info.total ? Math.round((info.synced / info.total) * 100) : 0;
+        const colorClass = linePct === 100 ? 'low' : linePct >= 50 ? 'med' : 'high';
+        return `<tr>
+          <td class="mono">${sku}</td>
+          <td>${info.name}</td>
+          <td>${info.synced} / ${info.total}</td>
+          <td><div style="display:inline-block; width:80px; height:14px; background:var(--ink); position:relative">
+            <div class="progress-bar ${colorClass}" style="height:100%; width:${Math.min(linePct, 100)}%"></div>
+          </div> ${linePct}%</td>
+        </tr>`;
+      }).join('');
+
+    el.classList.remove('panel-loading');
+    el.style.display = 'flex';
+    el.style.flexDirection = 'column';
+    el.style.gap = '14px';
+    el.innerHTML = `
+      <div style="display:flex; gap:20px; flex-wrap:wrap">
+        <div>
+          <div class="label" style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em">Products</div>
+          <div style="font-family:'Archivo Black',sans-serif; font-size:32px; line-height:1">${totalProducts} / ${total}</div>
+          <div style="font-size:13px; color:var(--ink-2)">${pct}% synced</div>
+        </div>
+        <div>
+          <div class="label" style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em">Monthly prices</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:15px">EUR: ${mEur}/${total} · PLN: ${mPln}/${total}</div>
+        </div>
+        <div>
+          <div class="label" style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em">Yearly prices</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:15px">EUR: ${yEur}/${expectedYEur} · PLN: ${yPln}/${expectedYPln}</div>
+        </div>
+        <button type="button" id="refresh-overview-btn" class="btn" style="padding:8px 14px; background:var(--ink); color:var(--cream); align-self:flex-end; font-size:12px">Odśwież</button>
+      </div>
+      <table class="admin-table">
+        <thead><tr><th>SKU</th><th>Linia</th><th>Products synced</th><th>Postęp</th></tr></thead>
+        <tbody>${lineRows}</tbody>
+      </table>
+    `;
+    document.getElementById('refresh-overview-btn').addEventListener('click', renderStripeOverview);
+  }
+
+  await renderStripeOverview();
+
   // Setup Stripe — dry-run i pełne wykonanie
   const setupStatus = document.getElementById('setup-stripe-status');
   const setupResult = document.getElementById('setup-stripe-result');
@@ -391,6 +477,7 @@
       setupStatus.style.color = 'var(--ok, #1f7a3a)';
       setupResult.textContent = JSON.stringify(data, null, 2);
       setupResult.style.display = 'block';
+      if (!dryRun) await renderStripeOverview();
     } else {
       const text = await res.text();
       setupStatus.textContent = `✗ Błąd: ${text}`;
