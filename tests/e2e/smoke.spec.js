@@ -13,6 +13,8 @@ const PAGES = [
   { name: 'admin', path: '/admin.html' },
   { name: 'logowanie', path: '/logowanie.html' },
   { name: 'rejestracja', path: '/rejestracja.html' },
+  { name: 'konfigurator', path: '/konfigurator.html' },
+  { name: 'dziekujemy', path: '/dziekujemy.html' },
 ];
 
 for (const { name, path } of PAGES) {

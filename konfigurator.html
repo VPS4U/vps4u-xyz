@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Konfigurator · VPS4U.xyz</title>
+<meta name="description" content="Wybierz VPS-a — 6 linii dostawców, pełna kontrola konfiguracji, polski support." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="subpages.css" />
+<style>
+  .cfg-shell { max-width: 1080px; margin: 0 auto; padding: 32px 24px 96px; }
+  .cfg-head { padding-bottom: 24px; border-bottom: 1.5px solid var(--ink); margin-bottom: 32px; }
+  .cfg-head h1 { font-family: 'Archivo Black', sans-serif; font-size: 40px; letter-spacing: -0.02em; margin: 0 0 6px; }
+  .cfg-head .powered { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .cfg-head .positioning { margin-top: 14px; font-size: 16px; color: var(--ink-2); max-width: 640px; }
+  .cfg-section { margin-top: 32px; }
+  .cfg-section h2 { font-family: 'Archivo Black', sans-serif; font-size: 18px; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 14px; }
+  .cfg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .cfg-option { display: block; padding: 14px; border: 1.5px solid var(--ink); cursor: pointer; transition: background .15s ease; }
+  .cfg-option:hover:not(.disabled) { background: var(--cream-2, #f5f0e6); }
+  .cfg-option.selected { background: var(--ink); color: var(--cream); }
+  .cfg-option.disabled { opacity: .35; cursor: not-allowed; }
+  .cfg-option input { display: none; }
+  .cfg-option .name { font-family: 'Archivo Black', sans-serif; font-size: 16px; }
+  .cfg-option .specs { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-2); margin-top: 6px; }
+  .cfg-option.selected .specs { color: rgba(255,255,255,.7); }
+  .cfg-addons { display: flex; gap: 12px; flex-wrap: wrap; }
+  .cfg-addon { padding: 12px 16px; border: 1.5px solid var(--ink); cursor: pointer; display: flex; align-items: center; gap: 10px; }
+  .cfg-addon.selected { background: var(--accent); color: var(--cream); }
+  .cfg-addon.disabled { opacity: .35; cursor: not-allowed; }
+  .cfg-addon input { display: none; }
+  .cfg-toggle { display: inline-flex; border: 1.5px solid var(--ink); }
+  .cfg-toggle button { padding: 10px 18px; border: none; background: none; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .cfg-toggle button.active { background: var(--ink); color: var(--cream); }
+  .cfg-summary { margin-top: 40px; padding: 28px; border: 1.5px solid var(--ink); background: var(--cream-2, #f5f0e6); display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .cfg-summary .price { font-family: 'Archivo Black', sans-serif; font-size: 48px; line-height: 1; }
+  .cfg-summary .saving { font-size: 14px; color: var(--ok, #1f7a3a); font-weight: 600; }
+  .cfg-summary .pln-equiv { font-size: 13px; color: var(--ink-2); margin-top: 4px; }
+  .cfg-summary button { padding: 16px 32px; font-size: 16px; }
+  .cfg-error { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .cfg-lines-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+  .cfg-line-card { padding: 24px; border: 1.5px solid var(--ink); text-decoration: none; color: var(--ink); display: block; transition: background .15s ease; }
+  .cfg-line-card:hover { background: var(--cream-2, #f5f0e6); }
+  .cfg-line-card .marketing { font-family: 'Archivo Black', sans-serif; font-size: 22px; }
+  .cfg-line-card .provider { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 6px; }
+  .cfg-line-card .from-price { font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-top: 14px; }
+  .cfg-line-card .from-price strong { font-size: 20px; }
+  .cfg-line-card .position { font-size: 14px; color: var(--ink-2); margin-top: 10px; }
+</style>
+</head>
+<body data-page="konfigurator">
+
+<nav class="nav">
+  <div class="wrap nav-row">
+    <a href="index.html" class="logo">
+      <span class="badge">v4</span>
+      <span>VPS4U<span style="color:var(--accent)">.</span>xyz</span>
+    </a>
+    <div class="nav-right">
+      <a href="logowanie.html" class="btn" style="padding:8px 14px; font-size:13px; background:var(--ink); color:var(--cream)">Logowanie</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+<div class="cfg-shell">
+  <div id="loading" class="panel-loading">// Ładuję konfigurator…</div>
+
+  <!-- Widok: wybór linii (gdy ?line= brak) -->
+  <div id="view-lines" style="display:none">
+    <header class="cfg-head">
+      <h1>Wybierz linię VPS</h1>
+      <p class="positioning">6 dostawców, jeden polski support. Wybierz linię która pasuje do Twojego projektu — możesz zmienić w każdej chwili.</p>
+    </header>
+    <div id="lines-grid" class="cfg-lines-grid"></div>
+  </div>
+
+  <!-- Widok: konfigurator dla wybranej linii -->
+  <div id="view-configurator" style="display:none">
+    <header class="cfg-head">
+      <h1 id="line-marketing">…</h1>
+      <p class="powered" id="line-provider">…</p>
+      <p class="positioning" id="line-positioning">…</p>
+    </header>
+
+    <section class="cfg-section">
+      <h2>Rozmiar</h2>
+      <div id="hardware-grid" class="cfg-grid"></div>
+    </section>
+
+    <section class="cfg-section">
+      <h2>Dodatki</h2>
+      <div id="addons-row" class="cfg-addons"></div>
+    </section>
+
+    <section class="cfg-section">
+      <h2>Okres rozliczeniowy</h2>
+      <div class="cfg-toggle" role="tablist">
+        <button type="button" data-period="monthly" class="active">Miesięcznie</button>
+        <button type="button" data-period="yearly">Rocznie</button>
+      </div>
+    </section>
+
+    <section class="cfg-section">
+      <h2>Waluta</h2>
+      <div class="cfg-toggle" role="tablist">
+        <button type="button" data-currency="eur" class="active">EUR</button>
+        <button type="button" data-currency="pln">PLN</button>
+      </div>
+    </section>
+
+    <div class="cfg-summary">
+      <div>
+        <div class="price" id="summary-price">…</div>
+        <div class="saving" id="summary-saving" style="display:none"></div>
+        <div class="pln-equiv" id="summary-equiv"></div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end">
+        <button id="order-btn" class="btn btn-primary">Zamów →</button>
+        <span id="order-status" class="cfg-error"></span>
+      </div>
+    </div>
+
+    <p style="margin-top: 24px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em">
+      // Płatność: Stripe (karta) • Auto VAT EU • <a href="logowanie.html" style="color:var(--accent)">konto otrzymasz mailem po opłaceniu</a>
+    </p>
+  </div>
+</div>
+</main>
+
+<script src="config.js"></script>
+<script src="cookie-banner.js"></script>
+<script type="module">
+  import { supabase } from '/lib/supabase.js';
+  import { formatHardwareLabel, formatPricePln, formatPriceEur } from '/lib/pricing.js';
+
+  const ADDON_LABELS = {
+    X: { label: 'Rozszerzona sieć', desc: '+1 IPv4 / lepszy port' },
+    A: { label: 'Automatyczny backup', desc: 'Codzienne snapshoty + restore' },
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  const lineSku = params.get('line');
+
+  if (!lineSku) {
+    await renderLinesPicker();
+  } else {
+    await renderConfigurator(lineSku);
+  }
+
+  // ============ Widok 1: wybór linii ============
+  async function renderLinesPicker() {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('view-lines').style.display = 'block';
+
+    const { data: lines, error } = await supabase
+      .from('product_lines')
+      .select('sku_code, marketing_name, positioning, provider_info!inner(name)')
+      .eq('active', true)
+      .order('sku_code');
+    if (error) {
+      document.getElementById('lines-grid').innerHTML = `<div class="cfg-error">Błąd: ${error.message}</div>`;
+      return;
+    }
+
+    // Cena "od" — bierzemy najtańszą monthly EUR dla każdej linii
+    const { data: minPrices } = await supabase
+      .from('product_configurations')
+      .select('product_lines!inner(sku_code), price_monthly_eur_cents')
+      .eq('active', true)
+      .order('price_monthly_eur_cents');
+
+    const minByLine = {};
+    for (const r of minPrices ?? []) {
+      const sku = r.product_lines.sku_code;
+      if (!minByLine[sku]) minByLine[sku] = r.price_monthly_eur_cents;
+    }
+
+    document.getElementById('lines-grid').innerHTML = lines.map((l) => `
+      <a href="konfigurator?line=${l.sku_code}" class="cfg-line-card">
+        <div class="marketing">${l.marketing_name}</div>
+        <div class="provider">Powered by ${l.provider_info.name}</div>
+        <div class="from-price">od <strong>${formatPriceEur(minByLine[l.sku_code] ?? 0)}</strong> / mies.</div>
+        <div class="position">${l.positioning ?? ''}</div>
+      </a>
+    `).join('');
+  }
+
+  // ============ Widok 2: konfigurator linii ============
+  async function renderConfigurator(sku) {
+    const { data: line, error: lineErr } = await supabase
+      .from('product_lines')
+      .select('sku_code, marketing_name, positioning, backup_available, backup_included_from, locations, provider_info!inner(name)')
+      .eq('sku_code', sku)
+      .eq('active', true)
+      .single();
+    if (lineErr || !line) {
+      document.getElementById('loading').innerHTML = `<div class="cfg-error">Linia "${sku}" nieaktywna lub nie istnieje. <a href="konfigurator">Wróć</a></div>`;
+      return;
+    }
+
+    const { data: configs, error: cfgErr } = await supabase
+      .from('product_configurations')
+      .select('hardware_combo, addons, vcpu, ram_gb, disk_gb, transfer_tb, ipv4_count, port_mbps, has_backup, price_monthly_eur_cents, price_monthly_pln_grosze, price_yearly_eur_cents, price_yearly_pln_grosze, stripe_price_monthly_eur_id, stripe_price_monthly_pln_id, stripe_price_yearly_eur_id, stripe_price_yearly_pln_id, product_lines!inner(sku_code)')
+      .eq('active', true)
+      .eq('product_lines.sku_code', sku);
+    if (cfgErr) {
+      document.getElementById('loading').innerHTML = `<div class="cfg-error">Błąd: ${cfgErr.message}</div>`;
+      return;
+    }
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('view-configurator').style.display = 'block';
+
+    document.getElementById('line-marketing').textContent = line.marketing_name;
+    document.getElementById('line-provider').textContent = `Powered by ${line.provider_info.name} · ${(line.locations ?? []).join(', ') || ''}`;
+    document.getElementById('line-positioning').textContent = line.positioning ?? '';
+
+    // State
+    const state = {
+      hardware: 'base',
+      addons: new Set(),
+      period: 'monthly',
+      currency: localStorage.getItem('vps4u_currency') || 'eur',
+    };
+
+    // Render hardware options (8 combos)
+    const ORDER = ['base', 'S', 'D', 'S+D', 'L', 'L+S', 'L+D', 'L+S+D'];
+    const HARDWARE_SPECS = {
+      base: { vcpu: 2, ram: 4, disk: 80 }, S: { vcpu: 2, ram: 8, disk: 80 }, D: { vcpu: 2, ram: 4, disk: 160 }, 'S+D': { vcpu: 2, ram: 8, disk: 160 },
+      L: { vcpu: 4, ram: 8, disk: 80 }, 'L+S': { vcpu: 4, ram: 16, disk: 80 }, 'L+D': { vcpu: 4, ram: 8, disk: 160 }, 'L+S+D': { vcpu: 4, ram: 16, disk: 160 },
+    };
+    document.getElementById('hardware-grid').innerHTML = ORDER.map((hw) => {
+      const specs = HARDWARE_SPECS[hw];
+      return `<label class="cfg-option" data-hw="${hw}">
+        <input type="radio" name="hw" value="${hw}" ${hw === 'base' ? 'checked' : ''}>
+        <div class="name">${formatHardwareLabel(hw)}</div>
+        <div class="specs">${specs.vcpu} vCPU · ${specs.ram} GB RAM · ${specs.disk} GB NVMe</div>
+      </label>`;
+    }).join('');
+
+    // Render addons (X always; A only if backup_available)
+    const addonHtml = [];
+    addonHtml.push(`<label class="cfg-addon" data-addon="X">
+      <input type="checkbox" value="X">
+      <span><strong>${ADDON_LABELS.X.label}</strong><br><small>${ADDON_LABELS.X.desc}</small></span>
+    </label>`);
+    if (line.backup_available) {
+      addonHtml.push(`<label class="cfg-addon" data-addon="A">
+        <input type="checkbox" value="A">
+        <span><strong>${ADDON_LABELS.A.label}</strong><br><small>${ADDON_LABELS.A.desc}</small></span>
+      </label>`);
+    }
+    document.getElementById('addons-row').innerHTML = addonHtml.join('');
+
+    // Wire event handlers
+    document.querySelectorAll('input[name="hw"]').forEach((el) => el.addEventListener('change', (e) => {
+      state.hardware = e.target.value;
+      document.querySelectorAll('.cfg-option').forEach((o) => o.classList.toggle('selected', o.dataset.hw === state.hardware));
+      updatePrice();
+    }));
+    document.querySelectorAll('.cfg-addon input').forEach((el) => el.addEventListener('change', (e) => {
+      if (e.target.checked) state.addons.add(e.target.value); else state.addons.delete(e.target.value);
+      e.target.closest('.cfg-addon').classList.toggle('selected', e.target.checked);
+      updatePrice();
+    }));
+    document.querySelectorAll('[data-period]').forEach((btn) => btn.addEventListener('click', () => {
+      state.period = btn.dataset.period;
+      document.querySelectorAll('[data-period]').forEach((b) => b.classList.toggle('active', b === btn));
+      updatePrice();
+    }));
+    document.querySelectorAll('[data-currency]').forEach((btn) => btn.addEventListener('click', () => {
+      state.currency = btn.dataset.currency;
+      localStorage.setItem('vps4u_currency', state.currency);
+      document.querySelectorAll('[data-currency]').forEach((b) => b.classList.toggle('active', b === btn));
+      updatePrice();
+    }));
+
+    // Set initial selected styling
+    document.querySelector('.cfg-option[data-hw="base"]').classList.add('selected');
+    if (state.currency === 'pln') {
+      document.querySelectorAll('[data-currency]').forEach((b) => b.classList.toggle('active', b.dataset.currency === 'pln'));
+    }
+
+    // Order button
+    document.getElementById('order-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('order-btn');
+      const status = document.getElementById('order-status');
+      btn.disabled = true;
+      btn.textContent = 'Tworzę sesję…';
+      status.textContent = '';
+
+      const res = await fetch('/api/checkout/create', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          line_sku: sku,
+          hardware_combo: state.hardware,
+          addons: [...state.addons].sort(),
+          period: state.period,
+          currency: state.currency,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        window.location.href = data.checkout_url;
+      } else {
+        const text = await res.text();
+        status.textContent = `Błąd: ${text}`;
+        btn.disabled = false;
+        btn.textContent = 'Zamów →';
+      }
+    });
+
+    function findConfig() {
+      const addonsArr = [...state.addons].sort();
+      return configs.find((c) => {
+        if (c.hardware_combo !== state.hardware) return false;
+        const cfgAddons = [...(c.addons ?? [])].sort();
+        return JSON.stringify(cfgAddons) === JSON.stringify(addonsArr);
+      });
+    }
+
+    function updatePrice() {
+      const cfg = findConfig();
+      const priceEl = document.getElementById('summary-price');
+      const savingEl = document.getElementById('summary-saving');
+      const equivEl = document.getElementById('summary-equiv');
+      const btn = document.getElementById('order-btn');
+      const status = document.getElementById('order-status');
+
+      if (!cfg) {
+        priceEl.textContent = 'N/D';
+        savingEl.style.display = 'none';
+        equivEl.textContent = '';
+        btn.disabled = true;
+        status.textContent = 'Ta kombinacja nie istnieje w cenniku — zmień konfigurację.';
+        return;
+      }
+
+      const priceField = state.period === 'monthly'
+        ? (state.currency === 'eur' ? 'price_monthly_eur_cents' : 'price_monthly_pln_grosze')
+        : (state.currency === 'eur' ? 'price_yearly_eur_cents' : 'price_yearly_pln_grosze');
+      const amount = cfg[priceField];
+      const stripeIdField = state.period === 'monthly'
+        ? (state.currency === 'eur' ? 'stripe_price_monthly_eur_id' : 'stripe_price_monthly_pln_id')
+        : (state.currency === 'eur' ? 'stripe_price_yearly_eur_id' : 'stripe_price_yearly_pln_id');
+
+      if (amount == null) {
+        priceEl.textContent = 'N/D';
+        savingEl.style.display = 'none';
+        equivEl.textContent = '';
+        btn.disabled = true;
+        status.textContent = state.period === 'yearly'
+          ? 'Roczna cena niedostępna dla tej kombinacji. Wybierz Miesięcznie.'
+          : 'Niedostępne w tej walucie.';
+        return;
+      }
+
+      if (!cfg[stripeIdField]) {
+        btn.disabled = true;
+        status.textContent = 'Konfiguracja jeszcze nie ma Stripe Price ID (admin musi uruchomić setup).';
+      } else {
+        btn.disabled = false;
+        status.textContent = '';
+      }
+
+      const formatted = state.currency === 'eur' ? formatPriceEur(amount) : formatPricePln(amount);
+      const suffix = state.period === 'monthly' ? ' / mies.' : ' / rok';
+      priceEl.textContent = formatted + suffix;
+
+      // PLN equiv jeśli EUR wybrany
+      if (state.currency === 'eur') {
+        const plnAmount = state.period === 'monthly' ? cfg.price_monthly_pln_grosze : cfg.price_yearly_pln_grosze;
+        equivEl.textContent = plnAmount ? `≈ ${formatPricePln(plnAmount)}` : '';
+      } else {
+        const eurAmount = state.period === 'monthly' ? cfg.price_monthly_eur_cents : cfg.price_yearly_eur_cents;
+        equivEl.textContent = eurAmount ? `≈ ${formatPriceEur(eurAmount)}` : '';
+      }
+
+      // Saving (yearly vs 12× monthly)
+      if (state.period === 'yearly') {
+        const monthlyField = state.currency === 'eur' ? 'price_monthly_eur_cents' : 'price_monthly_pln_grosze';
+        const yearlyEquivMonthly = cfg[monthlyField] * 12;
+        const saving = yearlyEquivMonthly - amount;
+        const pct = Math.round((saving / yearlyEquivMonthly) * 100);
+        if (saving > 0) {
+          const savingStr = state.currency === 'eur' ? formatPriceEur(saving) : formatPricePln(saving);
+          savingEl.textContent = `Oszczędzasz ${savingStr} (${pct}%)`;
+          savingEl.style.display = 'block';
+        }
+      } else {
+        savingEl.style.display = 'none';
+      }
+    }
+
+    updatePrice();
+  }
+</script>
+</body>
+</html>
