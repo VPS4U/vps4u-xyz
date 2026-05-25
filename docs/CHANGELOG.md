@@ -4,6 +4,15 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #31] — 2026-05-25
+
+- `docs/email-templates/` — polskie szablony HTML dla Supabase Auth (do skopiowania w UI)
+  - `magic-link.html` — "🔑 Twój link logowania do VPS4U" (używany przy każdym logowaniu)
+  - `change-email.html` — "Potwierdź zmianę adresu email w VPS4U" (gdy user zmieni)
+  - `invite-user.html` — "Twoje konto w VPS4U jest gotowe" (gdy admin doda usera, np. webhook Stripe)
+- Style: inline CSS, brand zgodny ze stroną (czarne tło buttona, akcent pomarańczowy, Archivo Black), kompatybilne z mailowymi klientami
+- Następny krok dla operatora: skopiować zawartość plików do Supabase Dashboard → Authentication → Email Templates
+
 ## [PR #30] — 2026-05-25
 
 - `docs/deployment.md` — sekcja "Stable preview (`preview.vps4u.xyz`)"

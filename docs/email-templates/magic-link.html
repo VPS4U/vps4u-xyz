@@ -1,0 +1,65 @@
+<!--
+Subject heading: 🔑 Twój link logowania do VPS4U
+-->
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body style="margin:0; padding:0; background:#f5f0e6; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; color:#0a0a0a;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f5f0e6;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px; background:#ffffff; border:1.5px solid #0a0a0a;">
+
+        <!-- Brand header -->
+        <tr><td style="padding:24px 32px; border-bottom:1.5px solid #0a0a0a;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="background:#0a0a0a; color:#f5f0e6; font-weight:900; font-size:13px; padding:4px 8px; letter-spacing:0.05em;">v4</td>
+              <td style="padding-left:10px; font-family:'Archivo Black','Arial Black',sans-serif; font-weight:900; font-size:22px;">VPS4U<span style="color:#ef4a14">.</span>xyz</td>
+            </tr>
+          </table>
+        </td></tr>
+
+        <!-- Body -->
+        <tr><td style="padding:32px;">
+          <h1 style="margin:0 0 16px; font-family:'Archivo Black','Arial Black',sans-serif; font-weight:900; font-size:28px; line-height:1.15; letter-spacing:-0.02em;">
+            Zaloguj się do panelu
+          </h1>
+          <p style="margin:0 0 24px; font-size:16px; line-height:1.55; color:#333;">
+            Kliknij poniższy przycisk żeby zalogować się do swojego konta VPS4U. Link jest jednorazowy i wygasa za <strong>10 minut</strong>.
+          </p>
+
+          <!-- CTA button -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 28px;">
+            <tr><td align="center" style="background:#0a0a0a;">
+              <a href="{{ .ConfirmationURL }}" style="display:inline-block; padding:16px 28px; color:#f5f0e6; text-decoration:none; font-family:'Archivo Black','Arial Black',sans-serif; font-weight:900; font-size:15px; letter-spacing:0.04em; text-transform:uppercase;">
+                Zaloguj się →
+              </a>
+            </td></tr>
+          </table>
+
+          <p style="margin:0 0 8px; font-size:13px; color:#666; line-height:1.5;">
+            Jeśli przycisk nie działa, skopiuj poniższy link do przeglądarki:
+          </p>
+          <p style="margin:0 0 24px; font-family:'Courier New',monospace; font-size:11px; word-break:break-all; padding:10px; background:#f5f0e6; border:1px solid #ccc; color:#333;">
+            {{ .ConfirmationURL }}
+          </p>
+
+          <p style="margin:0; font-family:'Courier New',monospace; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.06em; line-height:1.6;">
+            // Nie próbowałeś się logować? Zignoruj ten mail. Nikt bez kliknięcia w link nie zaloguje się na Twoje konto.
+          </p>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="padding:20px 32px; background:#0a0a0a; color:#a0a0a0; font-size:11px; line-height:1.5; font-family:'Courier New',monospace; text-transform:uppercase; letter-spacing:0.06em;">
+          <strong style="color:#f5f0e6;">VPS4U.xyz</strong> · Polski support · Jedna faktura VAT · Bytom, Polska<br>
+          Problemy z logowaniem? <a href="mailto:info@vps4u.xyz" style="color:#ef4a14; text-decoration:none;">info@vps4u.xyz</a>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
