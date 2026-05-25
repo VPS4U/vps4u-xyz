@@ -20,7 +20,10 @@ import {
   computeMonthFromDate,
   formatPlnFromGrosze,
 } from '../../lib/admin-stats.js';
+import { formatHardwareLabel, formatPricePln, formatPriceEur } from '../../lib/pricing.js';
 import { requireEnv } from '../../lib/env.js';
+
+const ADDON_LABELS = { X: 'Rozszerzona sieć', A: 'Automatyczny backup' };
 
 export const config = {
   api: {
@@ -78,11 +81,122 @@ export default async function handler(req, res) {
   try {
     await processStripeEvent(event, {
       upsertProfileStripeId: async ({ email, stripe_customer_id }) => {
-        const { error } = await supabase
+        // Sprawdź czy profile istnieje
+        const { data: existing, error: lookupErr } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', email)
+          .maybeSingle();
+        if (lookupErr) throw lookupErr;
+
+        // Jeśli brak — utwórz auth user (trigger on_auth_user_created stworzy profile)
+        if (!existing) {
+          const { error: createErr } = await supabase.auth.admin.createUser({
+            email,
+            email_confirm: true, // pomijamy weryfikację — Stripe już zweryfikował email płatnością
+          });
+          if (createErr) {
+            // Race: gdy 2 webhooks równolegle, drugi dostanie "already registered" — to OK
+            if (!/already.*register|already.*exist|duplicate/i.test(createErr.message)) {
+              throw createErr;
+            }
+          }
+        }
+
+        // Update stripe_customer_id (teraz profile na pewno istnieje)
+        const { error: updateErr } = await supabase
           .from('profiles')
           .update({ stripe_customer_id })
           .eq('email', email);
-        if (error) throw error;
+        if (updateErr) throw updateErr;
+      },
+
+      // Po checkout.session.completed: 2 maile (klient + admin).
+      onOrderConfirmed: async (session) => {
+        const meta = session.metadata || {};
+        const customerEmail = session.customer_details?.email;
+
+        // Pobierz line marketing name + provider z DB
+        let lineName = meta.line_sku || 'VPS';
+        let providerName = '';
+        if (meta.line_sku) {
+          const { data: line } = await supabase
+            .from('product_lines')
+            .select('marketing_name, provider_info!inner(name)')
+            .eq('sku_code', meta.line_sku)
+            .maybeSingle();
+          if (line) {
+            lineName = line.marketing_name;
+            providerName = line.provider_info?.name || '';
+          }
+        }
+
+        const hardwareLabel = meta.hardware_combo ? formatHardwareLabel(meta.hardware_combo) : '';
+        const addons = (meta.addons || '').split(',').filter(Boolean);
+        const addonsDesc = addons.map((a) => ADDON_LABELS[a] || a).join(' + ');
+        const periodLabel = meta.period === 'yearly' ? 'rocznie' : 'miesięcznie';
+        const amountFormatted =
+          session.currency === 'pln'
+            ? formatPricePln(session.amount_total)
+            : formatPriceEur(session.amount_total);
+
+        // 1. Klient
+        if (customerEmail) {
+          try {
+            await sendBrevoEmail({
+              apiKey: env.BREVO_API_KEY,
+              to: customerEmail,
+              subject: `Dziękujemy za zamówienie ${lineName}!`,
+              htmlContent: `
+                <h2>Dziękujemy za zamówienie!</h2>
+                <p>Twoja płatność została odebrana. Oto szczegóły:</p>
+                <ul>
+                  <li><strong>Linia:</strong> ${lineName}${providerName ? ' (powered by ' + providerName + ')' : ''}</li>
+                  <li><strong>Konfiguracja:</strong> ${hardwareLabel}${addonsDesc ? ' + ' + addonsDesc : ''}</li>
+                  <li><strong>Okres rozliczeniowy:</strong> ${periodLabel}</li>
+                  <li><strong>Kwota:</strong> ${amountFormatted}</li>
+                </ul>
+                <p>Twój VPS będzie aktywny w ciągu kilku minut. Dostaniesz osobnego maila z dostępami SSH gdy maszyna będzie gotowa.</p>
+                <p><a href="https://vps4u.xyz/panel">Zaloguj się do panelu klienta →</a></p>
+                <p style="color:#666;font-size:12px">Pytania? Odpisz na ten mail — przeczyta to człowiek.</p>
+              `,
+            });
+          } catch (err) {
+            console.error('Customer confirmation email failed', { error: err.message });
+            // Nie throw — webhook ma return 200 nawet jeśli email nie poszedł
+          }
+        }
+
+        // 2. Admin (z admin_settings.alert_email)
+        try {
+          const { data: setting } = await supabase
+            .from('admin_settings')
+            .select('value')
+            .eq('key', 'alert_email')
+            .maybeSingle();
+          const adminEmail = setting?.value;
+          if (adminEmail && adminEmail !== customerEmail) {
+            await sendBrevoEmail({
+              apiKey: env.BREVO_API_KEY,
+              to: adminEmail,
+              subject: `Nowe zamówienie VPS4U: ${lineName} ${hardwareLabel}`,
+              htmlContent: `
+                <h2>Nowe zamówienie</h2>
+                <ul>
+                  <li><strong>Klient:</strong> ${customerEmail || 'nieznany'}</li>
+                  <li><strong>Linia:</strong> ${lineName}${providerName ? ' (' + providerName + ')' : ''}</li>
+                  <li><strong>Konfiguracja:</strong> ${hardwareLabel}${addonsDesc ? ' + ' + addonsDesc : ''}</li>
+                  <li><strong>Okres:</strong> ${periodLabel}</li>
+                  <li><strong>Kwota:</strong> ${amountFormatted}</li>
+                  <li><strong>Stripe session:</strong> <code>${session.id}</code></li>
+                </ul>
+                <p><a href="https://vps4u.xyz/admin">Otwórz panel admina →</a></p>
+              `,
+            });
+          }
+        } catch (err) {
+          console.error('Admin notification email failed', { error: err.message });
+        }
       },
 
       findProfileByStripeId: async (stripeCustomerId) => {
