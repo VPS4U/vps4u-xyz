@@ -4,6 +4,26 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #26] — 2026-05-24
+
+- **Stage 7.2**: Stripe setup — tworzy Products + Prices dla wszystkich aktywnych konfiguracji
+- **2 sposoby uruchomienia**: endpoint admin (rekomendowany, z Vercel env) lub CLI script (lokalny `.env.local`)
+- `lib/stripe-products.js` — pure helpers do budowy Stripe data:
+  - `makeInternalSku(config)` — `czarny-L+S+D-X` (sortowane addons → idempotent)
+  - `buildProductData(config)` — name, description, metadata.internal_sku do lookupu
+  - `buildPriceData(config, period, currency)` — Stripe Price z `lookup_key`
+  - `listPriceVariants(config)` — 4 warianty (monthly×eur/pln + yearly×eur/pln, pomija null)
+- `lib/stripe-setup.js` — orchestrator `syncAllConfigurations({stripe, supabase, dryRun})` — DI pattern, używany przez endpoint i script
+- **`api/admin/setup-stripe.js`** — POST endpoint:
+  - Auth: `requireAdmin` (JWT) + `requireEnv` (Stripe + Supabase creds z Vercel)
+  - Body: `{dry_run: bool}`
+  - Returns: `{ok, mode: 'test'|'live', dry_run, products_created, products_skipped, prices_created, prices_skipped}`
+- `scripts/setup-stripe.js` — thin CLI wrapper (alternatywa lokalnego uruchomienia, env z `.env.local`)
+- `package.json` — `npm run setup:stripe` i `setup:stripe:dry` dla CLI mode
+- `eslint.config.js` — dodano `scripts/**/*.js` do lintingu
+- `admin.html` — sekcja "Setup Stripe" z 2 przyciskami: Dry-run + Wykonaj setup (z confirm dialog) + JSON output
+- 16 nowych unit testów (11 stripe-products + 5 stripe-setup), total **95 unit + 8 E2E** zielone
+
 ## [PR #25] — 2026-05-24
 
 - **Stage 7.1**: schema produktów dla modelu agregatora (z planu aggregator-reseller-mvp)

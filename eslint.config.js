@@ -23,7 +23,13 @@ export default [
   },
   js.configs.recommended,
   {
-    files: ['lib/**/*.js', 'api/**/*.js', 'tests/**/*.js', 'playwright.config.js'],
+    files: [
+      'lib/**/*.js',
+      'api/**/*.js',
+      'tests/**/*.js',
+      'scripts/**/*.js',
+      'playwright.config.js',
+    ],
     languageOptions: {
       ecmaVersion: 2024,
       sourceType: 'module',
