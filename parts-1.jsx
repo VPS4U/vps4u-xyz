@@ -25,9 +25,9 @@ function Nav({ t, lang, setLang }) {
           <span>VPS4U<span style={{color:'var(--accent)'}}>.</span>xyz</span>
         </a>
         <div className="nav-links">
-          <a href="#config">{t.nav.vps}</a>
-          <a href="#services">{t.nav.services}</a>
+          <a href="porownaj.html">{t.nav.compare || (lang==='pl'?'Porównaj':'Compare')}</a>
           <a href="#pricing">{t.nav.pricing}</a>
+          <a href="#services">{t.nav.services}</a>
           <a href="o-mnie.html">{lang==='pl'?'O mnie':'About'}</a>
           <a href="#blog">{t.nav.blog}</a>
         </div>
@@ -37,7 +37,7 @@ function Nav({ t, lang, setLang }) {
             <button className={lang==='en'?'active':''} onClick={()=>setLang('en')}>EN</button>
           </div>
           <a href="logowanie.html" className="btn" style={{padding:'8px 14px', fontSize:13}}>{t.nav.login}</a>
-          <a href="rejestracja.html" className="btn btn-primary" style={{padding:'8px 14px', fontSize:13}}>{t.nav.signup}</a>
+          <a href="konfigurator.html" className="btn btn-primary" style={{padding:'8px 14px', fontSize:13}}>{t.nav.signup}</a>
         </div>
       </div>
     </nav>

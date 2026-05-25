@@ -30,7 +30,7 @@
   .cmp-table { width: 100%; border-collapse: collapse; }
   .cmp-table th, .cmp-table td { padding: 14px 12px; border: 1px solid var(--ink-2, #888); vertical-align: top; }
   .cmp-table th.feature-label { text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: var(--cream-2, #f5f0e6); min-width: 140px; }
-  .cmp-table th.line-header { text-align: center; min-width: 160px; background: var(--ink); color: var(--cream); }
+  .cmp-table th.line-header { text-align: center; min-width: 160px; }
   .cmp-table th.line-header .marketing { font-family: 'Archivo Black', sans-serif; font-size: 16px; line-height: 1.2; }
   .cmp-table th.line-header .provider { font-family: 'JetBrains Mono', monospace; font-size: 10px; opacity: .7; margin-top: 4px; text-transform: uppercase; letter-spacing: .06em; }
   .cmp-table td { text-align: center; font-size: 14px; }
@@ -128,7 +128,7 @@
 <script src="cookie-banner.js"></script>
 <script type="module">
   import { supabase } from '/lib/supabase.js';
-  import { formatPriceEur } from '/lib/pricing.js';
+  import { formatPriceEur, getLineColor } from '/lib/pricing.js';
 
   const ANTI_DDOS_LABELS = { basic: 'Podstawowy', advanced: 'Zaawansowany', enterprise: 'Enterprise' };
   const LOCATION_LABELS = { PL: '🇵🇱 Polska', DE: '🇩🇪 Niemcy', FR: '🇫🇷 Francja', UK: '🇬🇧 UK', NL: '🇳🇱 Holandia', LT: '🇱🇹 Litwa', FI: '🇫🇮 Finlandia', EU: '🇪🇺 UE' };
@@ -232,14 +232,19 @@
     table.style.display = '';
     empty.style.display = 'none';
 
-    // Header row — line columns
+    // Header row — line columns with color stripe
     const headerRow = document.getElementById('header-row');
-    headerRow.innerHTML = '<th class="feature-label">Cecha</th>' + filtered.map((l) => `
-      <th class="line-header">
+    headerRow.innerHTML = '<th class="feature-label">Cecha</th>' + filtered.map((l) => {
+      const c = getLineColor(l.sku_code);
+      const borderColor = l.sku_code === 'bialy' ? '#0a0a0a' : c.hex;
+      return `
+      <th class="line-header" style="background:${c.hex}; color:${c.textOnColor}; border-top:6px solid ${borderColor}">
+        <div class="color-label" style="font-family:'JetBrains Mono',monospace; font-size:10px; opacity:.7; text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px">Linia ${c.label}</div>
         <div class="marketing">${l.marketing_name}</div>
         <div class="provider">${l.provider_info.name}</div>
       </th>
-    `).join('');
+    `;
+    }).join('');
 
     // Body rows — each feature
     const rows = [

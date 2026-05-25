@@ -4,6 +4,17 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #33] — 2026-05-25
+
+- **Stage 7.6**: refresh strony głównej — model agregatora widoczny w UI + kolory linii (klienci znają je z poprzedniego brand'u)
+- `lib/pricing.js` — `getLineColor(sku)` zwraca `{hex, label, textOnColor}` dla 6 linii (Gold/Orange/Czarny/Biały/Czerwony/Niebieski). 2 nowe testy
+- `i18n.jsx` — sekcja `pricing` przepisana z 6 planów Micro-Beast → **6 linii dostawców** w PL i EN; nowe pole `sku`, `provider`, `url`; cena oznaczona "od €X" (najtańsza konfiguracja Starter w linii)
+- `parts-2.jsx` Pricing component — render `LINE_COLORS_INLINE` swatch (14×14px) + polski label koloru ("Linia Niebieski") + border-top 6px w kolorze; `Powered by <provider>` pod nazwą; CTA prowadzi do `konfigurator.html?line={sku}` zamiast martwego `buy.stripe.com/REPLACE_*`. Pod kartami link "Porównaj wszystkie linie"
+- `parts-1.jsx` Nav — link `Porównaj` zamiast `VPS`, primary CTA `Konfiguruj` → `konfigurator.html` (zamiast `rejestracja.html`)
+- `konfigurator.html` — color stripe nad nagłówkiem wybranej linii + swatch w line picker cards
+- `porownaj.html` — nagłówki kolumn w tabeli z kolorem linii + label "Linia X"
+- Total: **107 unit + 11 E2E** zielone
+
 ## [PR #32] — 2026-05-25
 
 - **Stage 7.5**: porównywarka MVP (`/porownaj`)

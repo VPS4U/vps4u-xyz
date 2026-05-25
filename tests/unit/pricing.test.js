@@ -7,6 +7,7 @@ import {
   formatHardwareLabel,
   formatPricePln,
   formatPriceEur,
+  getLineColor,
 } from '../../lib/pricing.js';
 
 describe('normalizeHardwareCombo', () => {
@@ -96,5 +97,36 @@ describe('formatPriceEur', () => {
     expect(formatPriceEur(1500)).toBe('€15.00');
     expect(formatPriceEur(3650)).toBe('€36.50');
     expect(formatPriceEur(0)).toBe('€0.00');
+  });
+});
+
+describe('getLineColor', () => {
+  it('zwraca hex + polski label dla każdej linii', () => {
+    expect(getLineColor('gold')).toEqual({ hex: '#C9A348', label: 'Gold', textOnColor: '#000' });
+    expect(getLineColor('orange')).toEqual({
+      hex: '#E07B00',
+      label: 'Orange',
+      textOnColor: '#fff',
+    });
+    expect(getLineColor('czarny')).toEqual({
+      hex: '#0a0a0a',
+      label: 'Czarny',
+      textOnColor: '#fff',
+    });
+    expect(getLineColor('bialy')).toEqual({ hex: '#FFFFFF', label: 'Biały', textOnColor: '#000' });
+    expect(getLineColor('czerwony')).toEqual({
+      hex: '#C8332E',
+      label: 'Czerwony',
+      textOnColor: '#fff',
+    });
+    expect(getLineColor('niebieski')).toEqual({
+      hex: '#1F4E8F',
+      label: 'Niebieski',
+      textOnColor: '#fff',
+    });
+  });
+
+  it('fallback dla nieznanego sku', () => {
+    expect(getLineColor('unknown')).toEqual({ hex: '#888', label: 'unknown', textOnColor: '#fff' });
   });
 });
