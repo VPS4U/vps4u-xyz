@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Porównaj VPS-y · VPS4U.xyz</title>
+<meta name="description" content="Porównaj 6 linii VPS-ów od europejskich dostawców. Cena, lokalizacja, backup, anti-DDoS. Wybierz najlepszy dla Twojego projektu." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="subpages.css" />
+<style>
+  .cmp-shell { max-width: 1280px; margin: 0 auto; padding: 32px 24px 96px; }
+  .cmp-head { padding-bottom: 24px; border-bottom: 1.5px solid var(--ink); margin-bottom: 24px; }
+  .cmp-head h1 { font-family: 'Archivo Black', sans-serif; font-size: 40px; letter-spacing: -0.02em; margin: 0 0 8px; }
+  .cmp-head p { margin: 0; font-size: 16px; color: var(--ink-2); max-width: 720px; }
+
+  .cmp-filters { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; padding: 18px; border: 1.5px solid var(--ink); background: var(--cream-2, #f5f0e6); margin-bottom: 24px; }
+  .cmp-filter-group { display: flex; flex-direction: column; gap: 6px; }
+  .cmp-filter-group .label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .cmp-slider-row { display: flex; align-items: center; gap: 10px; }
+  .cmp-slider-row input[type="range"] { width: 180px; }
+  .cmp-slider-row strong { font-family: 'JetBrains Mono', monospace; font-size: 14px; min-width: 60px; }
+  .cmp-checkboxes { display: flex; gap: 12px; flex-wrap: wrap; }
+  .cmp-checkboxes label { display: flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; cursor: pointer; }
+  .cmp-reset { padding: 8px 14px; background: var(--ink); color: var(--cream); border: none; cursor: pointer; font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+
+  .cmp-table-wrap { overflow-x: auto; }
+  .cmp-table { width: 100%; border-collapse: collapse; }
+  .cmp-table th, .cmp-table td { padding: 14px 12px; border: 1px solid var(--ink-2, #888); vertical-align: top; }
+  .cmp-table th.feature-label { text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: var(--cream-2, #f5f0e6); min-width: 140px; }
+  .cmp-table th.line-header { text-align: center; min-width: 160px; background: var(--ink); color: var(--cream); }
+  .cmp-table th.line-header .marketing { font-family: 'Archivo Black', sans-serif; font-size: 16px; line-height: 1.2; }
+  .cmp-table th.line-header .provider { font-family: 'JetBrains Mono', monospace; font-size: 10px; opacity: .7; margin-top: 4px; text-transform: uppercase; letter-spacing: .06em; }
+  .cmp-table td { text-align: center; font-size: 14px; }
+  .cmp-table td .price { font-family: 'Archivo Black', sans-serif; font-size: 22px; }
+  .cmp-table td .price-suffix { font-size: 11px; color: var(--muted); display: block; }
+  .cmp-table td .yes { color: var(--ok, #1f7a3a); font-weight: 700; }
+  .cmp-table td .no { color: var(--accent, #ef4a14); }
+  .cmp-table td .from-l { font-size: 11px; color: var(--muted); display: block; }
+  .cmp-table tr.cta-row td { padding: 14px 8px; }
+  .cmp-table tr.cta-row a { display: inline-block; padding: 10px 16px; background: var(--accent); color: var(--cream); text-decoration: none; font-family: 'Archivo Black', sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+
+  .cmp-empty { padding: 40px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); border: 1.5px dashed var(--ink-2); }
+
+  @media (max-width: 768px) {
+    .cmp-table th.line-header { min-width: 140px; }
+    .cmp-table td .price { font-size: 18px; }
+  }
+</style>
+</head>
+<body data-page="porownaj">
+
+<nav class="nav">
+  <div class="wrap nav-row">
+    <a href="index.html" class="logo">
+      <span class="badge">v4</span>
+      <span>VPS4U<span style="color:var(--accent)">.</span>xyz</span>
+    </a>
+    <div class="nav-right">
+      <a href="konfigurator.html" class="btn" style="padding:8px 14px; font-size:13px; background:var(--ink); color:var(--cream); margin-right:8px">Konfigurator</a>
+      <a href="logowanie.html" class="btn btn-primary" style="padding:8px 14px; font-size:13px">Logowanie</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+<div class="cmp-shell">
+
+  <header class="cmp-head">
+    <h1>Porównaj VPS-y</h1>
+    <p>6 linii infrastruktury od europejskich dostawców. Wszystkie z polskim supportem. Wybierz linię która pasuje do Twojego budżetu i wymagań, potem doprecyzuj rozmiar w konfiguratorze.</p>
+  </header>
+
+  <div id="loading" class="panel-loading">// Ładuję dane…</div>
+
+  <div id="content" style="display:none">
+
+    <!-- Filtry -->
+    <div class="cmp-filters">
+      <div class="cmp-filter-group">
+        <span class="label">Cena max</span>
+        <div class="cmp-slider-row">
+          <input type="range" id="filter-price" min="10" max="40" step="1" value="40" />
+          <strong id="filter-price-label">≤ 40 €/mc</strong>
+        </div>
+      </div>
+      <div class="cmp-filter-group">
+        <span class="label">Lokalizacja DC</span>
+        <div class="cmp-checkboxes" id="filter-locations"></div>
+      </div>
+      <div class="cmp-filter-group">
+        <span class="label">Backup</span>
+        <label style="font-family:'JetBrains Mono',monospace; font-size:12px; cursor:pointer">
+          <input type="checkbox" id="filter-backup" /> Wymagam
+        </label>
+      </div>
+      <button type="button" class="cmp-reset" id="filter-reset">Reset filtrów</button>
+    </div>
+
+    <!-- Tabela porównawcza -->
+    <div class="cmp-table-wrap">
+      <table class="cmp-table" id="cmp-table">
+        <thead>
+          <tr id="header-row">
+            <th class="feature-label">Cecha</th>
+            <!-- 6 nagłówków linii wstawiane przez JS -->
+          </tr>
+        </thead>
+        <tbody id="cmp-body">
+          <!-- Wiersze cech wstawiane przez JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div id="empty" class="cmp-empty" style="display:none">// Żadna linia nie pasuje do filtrów. Zwiększ budżet albo odznacz lokalizacje.</div>
+
+    <p style="margin-top: 24px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em">
+      // Cena = najtańsza konfiguracja w linii (Starter). Pełen cennik z opcjami w konfiguratorze.
+    </p>
+  </div>
+
+</div>
+</main>
+
+<script src="config.js"></script>
+<script src="cookie-banner.js"></script>
+<script type="module">
+  import { supabase } from '/lib/supabase.js';
+  import { formatPriceEur } from '/lib/pricing.js';
+
+  const ANTI_DDOS_LABELS = { basic: 'Podstawowy', advanced: 'Zaawansowany', enterprise: 'Enterprise' };
+  const LOCATION_LABELS = { PL: '🇵🇱 Polska', DE: '🇩🇪 Niemcy', FR: '🇫🇷 Francja', UK: '🇬🇧 UK', NL: '🇳🇱 Holandia', LT: '🇱🇹 Litwa', FI: '🇫🇮 Finlandia', EU: '🇪🇺 UE' };
+
+  // Fetch linii + najtańszej ceny per linia
+  const { data: lines, error: linesErr } = await supabase
+    .from('product_lines')
+    .select('sku_code, marketing_name, positioning, backup_available, backup_included_from, anti_ddos_level, locations, provider_info!inner(name)')
+    .eq('active', true)
+    .order('sku_code');
+  if (linesErr) {
+    document.getElementById('loading').textContent = `Błąd: ${linesErr.message}`;
+    throw linesErr;
+  }
+
+  const { data: configs } = await supabase
+    .from('product_configurations')
+    .select('product_lines!inner(sku_code), price_monthly_eur_cents, vcpu, ram_gb, disk_gb, transfer_tb, hardware_combo')
+    .eq('active', true)
+    .order('price_monthly_eur_cents');
+
+  // Per-line: min monthly EUR cents + base specs
+  const minByLine = {};
+  const baseSpecsByLine = {};
+  for (const c of configs ?? []) {
+    const sku = c.product_lines.sku_code;
+    if (minByLine[sku] == null) minByLine[sku] = c.price_monthly_eur_cents;
+    if (c.hardware_combo === 'base' && !baseSpecsByLine[sku]) {
+      baseSpecsByLine[sku] = { vcpu: c.vcpu, ram_gb: c.ram_gb, disk_gb: c.disk_gb, transfer_tb: c.transfer_tb };
+    }
+  }
+
+  // Wzbogać line data
+  for (const l of lines) {
+    l.min_price_cents = minByLine[l.sku_code] ?? 0;
+    l.base_specs = baseSpecsByLine[l.sku_code] ?? { vcpu: '?', ram_gb: '?', disk_gb: '?', transfer_tb: '?' };
+    // Wyciągnij unikalne kody krajów z locations (np. 'DE-FSN' -> 'DE')
+    l.country_codes = [...new Set((l.locations ?? []).map((loc) => loc.split('-')[0]))];
+  }
+
+  // Filtry — wszystkie obecne kody krajów (do wyrenderowania checkboxów)
+  const allCountries = [...new Set(lines.flatMap((l) => l.country_codes))].sort();
+  document.getElementById('filter-locations').innerHTML = allCountries.map((c) => `
+    <label><input type="checkbox" data-country="${c}" /> ${LOCATION_LABELS[c] ?? c}</label>
+  `).join('');
+
+  // Filter state
+  const state = {
+    maxPriceEur: 40,
+    countries: new Set(),  // pusty = wszystkie
+    backupRequired: false,
+  };
+
+  document.getElementById('filter-price').addEventListener('input', (e) => {
+    state.maxPriceEur = Number(e.target.value);
+    document.getElementById('filter-price-label').textContent = `≤ ${state.maxPriceEur} €/mc`;
+    render();
+  });
+  document.querySelectorAll('#filter-locations input').forEach((el) => {
+    el.addEventListener('change', () => {
+      if (el.checked) state.countries.add(el.dataset.country);
+      else state.countries.delete(el.dataset.country);
+      render();
+    });
+  });
+  document.getElementById('filter-backup').addEventListener('change', (e) => {
+    state.backupRequired = e.target.checked;
+    render();
+  });
+  document.getElementById('filter-reset').addEventListener('click', () => {
+    state.maxPriceEur = 40;
+    state.countries.clear();
+    state.backupRequired = false;
+    document.getElementById('filter-price').value = 40;
+    document.getElementById('filter-price-label').textContent = '≤ 40 €/mc';
+    document.querySelectorAll('#filter-locations input').forEach((el) => (el.checked = false));
+    document.getElementById('filter-backup').checked = false;
+    render();
+  });
+
+  function matchesFilters(line) {
+    if (line.min_price_cents > state.maxPriceEur * 100) return false;
+    if (state.countries.size > 0) {
+      const hasMatchingLoc = line.country_codes.some((c) => state.countries.has(c));
+      if (!hasMatchingLoc) return false;
+    }
+    if (state.backupRequired && !line.backup_available) return false;
+    return true;
+  }
+
+  function render() {
+    const filtered = lines.filter(matchesFilters);
+    const table = document.getElementById('cmp-table');
+    const empty = document.getElementById('empty');
+
+    if (filtered.length === 0) {
+      table.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+    table.style.display = '';
+    empty.style.display = 'none';
+
+    // Header row — line columns
+    const headerRow = document.getElementById('header-row');
+    headerRow.innerHTML = '<th class="feature-label">Cecha</th>' + filtered.map((l) => `
+      <th class="line-header">
+        <div class="marketing">${l.marketing_name}</div>
+        <div class="provider">${l.provider_info.name}</div>
+      </th>
+    `).join('');
+
+    // Body rows — each feature
+    const rows = [
+      { label: 'Cena od', renderCell: (l) => `<div class="price">${formatPriceEur(l.min_price_cents)}</div><span class="price-suffix">/ mies.</span>` },
+      { label: 'CPU bazowy', renderCell: (l) => `${l.base_specs.vcpu} vCPU` },
+      { label: 'RAM bazowy', renderCell: (l) => `${l.base_specs.ram_gb} GB` },
+      { label: 'Dysk bazowy', renderCell: (l) => `${l.base_specs.disk_gb} GB NVMe` },
+      { label: 'Transfer', renderCell: (l) => l.base_specs.transfer_tb === 100 ? 'Unlimited fair use' : `${l.base_specs.transfer_tb} TB` },
+      { label: 'Lokalizacje', renderCell: (l) => (l.country_codes ?? []).map((c) => LOCATION_LABELS[c] ?? c).join(', ') },
+      { label: 'Backup', renderCell: (l) => {
+        if (!l.backup_available) return '<span class="no">Niedostępny</span>';
+        if (l.backup_included_from) return `<span class="yes">W cenie od L</span>`;
+        return '<span class="yes">Dostępny (płatny)</span>';
+      } },
+      { label: 'Anti-DDoS', renderCell: (l) => ANTI_DDOS_LABELS[l.anti_ddos_level] ?? l.anti_ddos_level },
+      { label: 'Polski support', renderCell: () => '<span class="yes">✓ tak</span>' },
+    ];
+
+    const body = document.getElementById('cmp-body');
+    body.innerHTML = rows.map((r) => `<tr>
+      <th class="feature-label">${r.label}</th>
+      ${filtered.map((l) => `<td>${r.renderCell(l)}</td>`).join('')}
+    </tr>`).join('') + `<tr class="cta-row">
+      <td class="feature-label"></td>
+      ${filtered.map((l) => `<td><a href="konfigurator?line=${l.sku_code}">Wybierz →</a></td>`).join('')}
+    </tr>`;
+  }
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  render();
+</script>
+</body>
+</html>

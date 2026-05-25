@@ -14,6 +14,7 @@ const PAGES = [
   { name: 'logowanie', path: '/logowanie.html' },
   { name: 'rejestracja', path: '/rejestracja.html' },
   { name: 'konfigurator', path: '/konfigurator.html' },
+  { name: 'porownaj', path: '/porownaj.html' },
   { name: 'dziekujemy', path: '/dziekujemy.html' },
 ];
 
