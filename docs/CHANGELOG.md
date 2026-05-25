@@ -4,6 +4,19 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #28] — 2026-05-25
+
+- **Stage 7.3**: backend endpoint `/api/checkout/create` (z planu aggregator-reseller-mvp)
+- `lib/checkout.js` — pure walidator: `validateCheckoutPayload({line_sku, hardware_combo, addons, period, currency})` + `stripePriceColumnFor(period, currency)`. Normalizuje, sortuje addons (idempotent lookup)
+- `api/checkout/create.js` — public POST endpoint (bez auth, Stripe Checkout sam zbierze email):
+  - Walidacja payloadu
+  - Lookup `stripe_price_id` z `product_configurations` po `(line_sku, hardware_combo, addons)`
+  - `stripe.checkout.sessions.create({mode:'subscription', line_items, automatic_tax, customer_creation, billing_address})`
+  - Success URL: `/dziekujemy?session_id={CHECKOUT_SESSION_ID}`
+  - Metadata na session: line/hardware/addons/period/currency dla audytu
+- Stripe Tax `automatic_tax: enabled` — EU VAT robi się automatycznie
+- 10 nowych testów walidatora, total **105 unit + 8 E2E** zielone
+
 ## [PR #27] — 2026-05-25
 
 - `admin.html` — nowa sekcja "Stripe — stan synchronizacji"
