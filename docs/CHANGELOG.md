@@ -4,6 +4,19 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #29] — 2026-05-25
+
+- **Stage 7.4**: konfigurator UI + dziękujemy
+- `konfigurator.html` (URL `/konfigurator`):
+  - Bez parametru → lista 6 linii (cards z marketingową nazwą, "Powered by ...", cena "od", positioning)
+  - Z `?line=czarny` → konfigurator: nagłówek linii + 8 radio buttonów hardware (Starter/Pro/...) + checkboxy addonów X i A (A ukryty dla Gold/Orange) + toggle okresu (Miesięcznie/Rocznie) + toggle waluty (EUR/PLN zapamiętany w localStorage)
+  - Cena finalna na żywo z lookup table (client-side z DB Supabase)
+  - Toggle rocznie pokazuje oszczędność % vs 12× miesięcznie
+  - Przycisk "Zamów" → POST `/api/checkout/create` → redirect na Stripe Checkout URL
+  - Disabled gdy kombinacja niedostępna w cenniku rocznym (np. yearly + addon) lub brak `stripe_price_id` w DB
+- `dziekujemy.html` — strona success_url po Stripe Checkout (✓ + linki do panelu)
+- Smoke E2E rozszerzony o `konfigurator` i `dziekujemy` (10/10 zielone)
+
 ## [PR #28] — 2026-05-25
 
 - **Stage 7.3**: backend endpoint `/api/checkout/create` (z planu aggregator-reseller-mvp)
