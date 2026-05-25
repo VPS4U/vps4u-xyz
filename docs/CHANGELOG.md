@@ -4,6 +4,15 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #35] — 2026-05-25
+
+- **Fix krytyczny E2E**: webhook Stripe nie zapisywał płatności do `payments` (bug znaleziony przy testowej transakcji €200+ — log `Profile not found for stripe_customer_id`)
+- **Root cause**: `upsertProfileStripeId` robił tylko `UPDATE profiles WHERE email=X` — dla nowego klienta (jeszcze nieistniejący w `auth.users`) update'ował 0 rows, więc kolejny event `invoice.payment_succeeded` nie znajdował profilu po `stripe_customer_id` → płatność pomijana (warn) → admin dashboard pusty, brak alertów cap
+- `api/stripe/webhook.js` — `upsertProfileStripeId` najpierw sprawdza czy profile istnieje, jeśli nie → `supabase.auth.admin.createUser({email, email_confirm:true})` (trigger `on_auth_user_created` tworzy profile), potem UPDATE stripe_customer_id. Race-safe: ignoruje błąd "already registered"
+- `lib/stripe-webhook.js` + `api/stripe/webhook.js` — nowy dep `onOrderConfirmed(session)` wywoływany po `checkout.session.completed` → wysyła 2 maile przez Brevo: (1) klient = potwierdzenie z linią/konfiguracją/kwotą + link do panelu, (2) admin (z `admin_settings.alert_email`) = notyfikacja o nowym zamówieniu z metadanymi
+- `tests/unit/stripe-webhook.test.js` — 2 nowe testy: `onOrderConfirmed` wywoływane z pełną sesją + NIE wywoływane gdy brak email/customer
+- **Działanie po deploy**: replay testowej transakcji z Stripe Dashboard → Webhooks → Resend event. Nowa transakcja: payment row + 2 maile + dashboard %cap
+
 ## [PR #33] — 2026-05-25
 
 - **Stage 7.6**: refresh strony głównej — model agregatora widoczny w UI + kolory linii (klienci znają je z poprzedniego brand'u)

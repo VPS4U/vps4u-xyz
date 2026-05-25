@@ -10,6 +10,7 @@ function makeDeps() {
     insertPayment: vi.fn().mockResolvedValue(true), // domyślnie: nowy insert (nie duplikat)
     getEurPlnRate: vi.fn(),
     afterPaymentInserted: vi.fn(),
+    onOrderConfirmed: vi.fn(),
   };
 }
 
@@ -167,6 +168,37 @@ describe('processStripeEvent — checkout.session.completed', () => {
       email: 'klient@example.com',
       stripe_customer_id: 'cus_test_001',
     });
+  });
+
+  it('wywołuje onOrderConfirmed z pełną sesją po upsert profilu', async () => {
+    const session = {
+      id: 'cs_test_002',
+      customer: 'cus_test_002',
+      customer_details: { email: 'k@e.com' },
+      metadata: {
+        line_sku: 'czarny',
+        hardware_combo: 'L',
+        addons: 'X',
+        period: 'monthly',
+        currency: 'eur',
+      },
+      amount_total: 2800,
+      currency: 'eur',
+    };
+    await processStripeEvent(
+      { type: 'checkout.session.completed', data: { object: session } },
+      deps
+    );
+    expect(deps.onOrderConfirmed).toHaveBeenCalledWith(session);
+  });
+
+  it('NIE wywołuje onOrderConfirmed gdy brak email/customer (skip session)', async () => {
+    const session = { id: 'cs_test_003', customer: null, customer_details: null };
+    await processStripeEvent(
+      { type: 'checkout.session.completed', data: { object: session } },
+      deps
+    );
+    expect(deps.onOrderConfirmed).not.toHaveBeenCalled();
   });
 });
 
