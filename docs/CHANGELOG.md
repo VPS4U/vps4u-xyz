@@ -4,6 +4,13 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #30] — 2026-05-25
+
+- `docs/deployment.md` — sekcja "Stable preview (`preview.vps4u.xyz`)"
+- Setup: branch `preview` w repo, Vercel domain assignment do tego brancha, Cloudflare CNAME
+- Workflow "luźny" — operator mówi "wrzuć PR #X na preview", agent robi `reset --hard origin/main && merge origin/<branch> && push origin preview`
+- Auth zachowany (Vercel Deployment Protection), shareable links przez Vercel Dashboard / MCP
+
 ## [PR #29] — 2026-05-25
 
 - **Stage 7.4**: konfigurator UI + dziękujemy

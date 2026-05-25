@@ -7,6 +7,7 @@
 - **Branch produkcyjny**: `main`
 - **Deploy**: automatyczny przy każdym push do `main`
 - **Preview**: każdy PR dostaje osobny URL typu `vps4u-xyz-git-<branch>-vps4u.vercel.app`
+- **Stable preview**: `preview.vps4u.xyz` → branch `preview` (do ręcznego podglądu, patrz niżej)
 - **Domena**: `vps4u.xyz` (apex) + `www.vps4u.xyz` (redirect do apex)
 - **DNS**: Cloudflare (proxy off, tylko DNS)
 - **SSL**: automatyczny od Vercela (Let's Encrypt)
@@ -30,6 +31,41 @@ Merge do main ──── Vercel buduje production ──► vps4u.xyz live
 ```
 
 Czas od merge do live: **~30 sekund**.
+
+## Stable preview (`preview.vps4u.xyz`)
+
+Każdy PR ma już swój **automatyczny** preview URL (`vps4u-xyz-git-<branch>-...vercel.app`) — wystarcza w 90% przypadków. Ale czasem właściciel chce podpiąć konkretną zmianę pod **stabilny** adres (`preview.vps4u.xyz`), np. żeby pokazać klientowi albo zostawić sobie zakładkę.
+
+### Setup (jednorazowo, zrobiony)
+
+- Branch `preview` w repo (pochodna `main`)
+- Vercel Project → Settings → Domains: `preview.vps4u.xyz` przypisana do brancha `preview`
+- Cloudflare: `CNAME preview` → `cname.vercel-dns.com`, proxy off
+- **Deployment Protection** włączone — wymaga zalogowania do Vercela (`vercel.com`) w tej samej przeglądarce. Production (`vps4u.xyz`) jest publiczne i bez auth
+
+### Workflow (luźny — używamy gdy potrzebne)
+
+Operator mówi agentowi: *"wrzuć PR #X na preview"*. Agent wykonuje:
+
+```bash
+git fetch origin
+git checkout preview
+git reset --hard origin/main          # czysty start od prod
+git merge origin/<branch-z-PR-X>      # nakłada zmiany z PR
+git push origin preview
+```
+
+Po ~30s `preview.vps4u.xyz` ma stan tego PR. Możesz testować, klikać, dzielić link.
+
+### Po teście
+
+Standardowy merge PR-a do `main` — branch `preview` zostaje "stary" do następnego użycia. Przy następnym podglądzie agent resetuje `preview` do `main` (linia 3 powyżej) i nakłada nowe zmiany.
+
+### Generowanie shareable linku (dla klienta)
+
+Skoro `preview.vps4u.xyz` wymaga auth Vercela, do udostępnienia komuś z zewnątrz:
+- Vercel Dashboard → Deployments → konkretny deploy → **Share** → 23h ważny URL z bypass auth
+- Albo agent przez Vercel MCP: `get_access_to_vercel_url` daje token bypass
 
 ## Konfiguracja Vercela
 
