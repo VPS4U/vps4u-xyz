@@ -4,6 +4,12 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #37] — 2026-05-26
+
+- Fix admin dashboard — `Bieżący miesiąc` pokazywał `0 zł / 0 płatności` mimo że row jest w bazie z `month='2026-05'`
+- Root cause: `admin.html` query `.select(...)` pobierał `quarter` ale zapomniał `month` → `p.month === undefined` → filter `payments.filter(p => p.month === currentMonth)` zwracał `[]`
+- Bug ujawnił się dopiero po pierwszej realnej płatności (E2E)
+
 ## [PR #36] — 2026-05-25
 
 - **Fix maili potwierdzających** (po feedbacku: admin nie dostał maila + brak oznaczeń znanych klientom)
