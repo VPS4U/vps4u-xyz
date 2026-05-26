@@ -237,7 +237,51 @@ export default async function handler(req, res) {
           .eq('stripe_customer_id', stripeCustomerId)
           .maybeSingle();
         if (error) throw error;
-        return data;
+        if (data) return data;
+
+        // Race recovery: Stripe wysyła checkout.session.completed + invoice.payment_succeeded
+        // równolegle. Jeśli invoice przyszło pierwsze, profile jeszcze nie ma stripe_customer_id.
+        // Pobieramy email z Stripe i wykonujemy tę samą logikę co upsertProfileStripeId.
+        try {
+          const customer = await stripe.customers.retrieve(stripeCustomerId);
+          const email = customer?.email;
+          if (!email) {
+            console.warn(`findProfileByStripeId: Stripe customer ${stripeCustomerId} bez email`);
+            return null;
+          }
+          // Find or create profile
+          const { data: existing } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', email)
+            .maybeSingle();
+          if (!existing) {
+            const { error: createErr } = await supabase.auth.admin.createUser({
+              email,
+              email_confirm: true,
+            });
+            if (
+              createErr &&
+              !/already.*register|already.*exist|duplicate/i.test(createErr.message)
+            ) {
+              throw createErr;
+            }
+          }
+          await supabase
+            .from('profiles')
+            .update({ stripe_customer_id: stripeCustomerId })
+            .eq('email', email);
+          const { data: recovered } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', email)
+            .maybeSingle();
+          console.log(`findProfileByStripeId: recovered profile for ${email} from Stripe customer`);
+          return recovered;
+        } catch (err) {
+          console.error('findProfileByStripeId recovery failed', { error: err.message });
+          return null;
+        }
       },
 
       insertPayment: async (payment) => {
