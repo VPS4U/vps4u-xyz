@@ -20,7 +20,12 @@ import {
   computeMonthFromDate,
   formatPlnFromGrosze,
 } from '../../lib/admin-stats.js';
-import { formatHardwareLabel, formatPricePln, formatPriceEur } from '../../lib/pricing.js';
+import {
+  formatHardwareLabel,
+  formatPricePln,
+  formatPriceEur,
+  getLineColor,
+} from '../../lib/pricing.js';
 import { requireEnv } from '../../lib/env.js';
 
 const ADDON_LABELS = { X: 'Rozszerzona sieć', A: 'Automatyczny backup' };
@@ -131,14 +136,42 @@ export default async function handler(req, res) {
           }
         }
 
-        const hardwareLabel = meta.hardware_combo ? formatHardwareLabel(meta.hardware_combo) : '';
+        // Kolor linii — klienci znają stare oznaczenia ("Linia Czarny", "Linia Gold").
+        const color = meta.line_sku ? getLineColor(meta.line_sku) : null;
+        const lineLabel = color ? `Linia ${color.label}` : lineName;
+        const swatchHtml = color
+          ? `<span style="display:inline-block;width:14px;height:14px;background:${color.hex};border:1px solid #ccc;vertical-align:middle;margin-right:6px;border-radius:2px;"></span>`
+          : '';
+
+        // Surowe kody (L, S, D, X, A) + marketing label w nawiasie.
+        const hardwareCombo = meta.hardware_combo || '';
+        const hardwareMarketing = hardwareCombo ? formatHardwareLabel(hardwareCombo) : '';
         const addons = (meta.addons || '').split(',').filter(Boolean);
+        const addonsCodes = addons.join(' + ');
         const addonsDesc = addons.map((a) => ADDON_LABELS[a] || a).join(' + ');
+
+        const configRaw = hardwareCombo
+          ? addonsCodes
+            ? `${hardwareCombo} + ${addonsCodes}`
+            : hardwareCombo
+          : '';
+        const configFriendly =
+          hardwareMarketing && addonsDesc
+            ? `${hardwareMarketing} + ${addonsDesc}`
+            : hardwareMarketing || addonsDesc || '';
+
         const periodLabel = meta.period === 'yearly' ? 'rocznie' : 'miesięcznie';
         const amountFormatted =
           session.currency === 'pln'
             ? formatPricePln(session.amount_total)
             : formatPriceEur(session.amount_total);
+
+        const detailsListHtml = `
+          <li><strong>Linia:</strong> ${swatchHtml}${lineLabel}${providerName ? ' — powered by ' + providerName : ''} <span style="color:#666">(${lineName})</span></li>
+          <li><strong>Konfiguracja:</strong> <code style="background:#f5f5f5;padding:2px 6px;border-radius:3px">${configRaw}</code>${configFriendly ? ' <span style="color:#666">(' + configFriendly + ')</span>' : ''}</li>
+          <li><strong>Okres rozliczeniowy:</strong> ${periodLabel}</li>
+          <li><strong>Kwota:</strong> ${amountFormatted}</li>
+        `;
 
         // 1. Klient
         if (customerEmail) {
@@ -146,21 +179,17 @@ export default async function handler(req, res) {
             await sendBrevoEmail({
               apiKey: env.BREVO_API_KEY,
               to: customerEmail,
-              subject: `Dziękujemy za zamówienie ${lineName}!`,
+              subject: `Dziękujemy za zamówienie — ${lineLabel} ${configRaw}`,
               htmlContent: `
                 <h2>Dziękujemy za zamówienie!</h2>
                 <p>Twoja płatność została odebrana. Oto szczegóły:</p>
-                <ul>
-                  <li><strong>Linia:</strong> ${lineName}${providerName ? ' (powered by ' + providerName + ')' : ''}</li>
-                  <li><strong>Konfiguracja:</strong> ${hardwareLabel}${addonsDesc ? ' + ' + addonsDesc : ''}</li>
-                  <li><strong>Okres rozliczeniowy:</strong> ${periodLabel}</li>
-                  <li><strong>Kwota:</strong> ${amountFormatted}</li>
-                </ul>
+                <ul>${detailsListHtml}</ul>
                 <p>Twój VPS będzie aktywny w ciągu kilku minut. Dostaniesz osobnego maila z dostępami SSH gdy maszyna będzie gotowa.</p>
                 <p><a href="https://vps4u.xyz/panel">Zaloguj się do panelu klienta →</a></p>
                 <p style="color:#666;font-size:12px">Pytania? Odpisz na ten mail — przeczyta to człowiek.</p>
               `,
             });
+            console.log('Customer confirmation email sent', { to: customerEmail });
           } catch (err) {
             console.error('Customer confirmation email failed', { error: err.message });
             // Nie throw — webhook ma return 200 nawet jeśli email nie poszedł
@@ -175,24 +204,26 @@ export default async function handler(req, res) {
             .eq('key', 'alert_email')
             .maybeSingle();
           const adminEmail = setting?.value;
-          if (adminEmail && adminEmail !== customerEmail) {
+          if (!adminEmail) {
+            console.warn('Admin notification skip: admin_settings.alert_email is empty');
+          } else if (adminEmail === customerEmail) {
+            console.warn('Admin notification skip: admin email == customer email', { adminEmail });
+          } else {
             await sendBrevoEmail({
               apiKey: env.BREVO_API_KEY,
               to: adminEmail,
-              subject: `Nowe zamówienie VPS4U: ${lineName} ${hardwareLabel}`,
+              subject: `Nowe zamówienie VPS4U: ${lineLabel} ${configRaw}`,
               htmlContent: `
                 <h2>Nowe zamówienie</h2>
                 <ul>
                   <li><strong>Klient:</strong> ${customerEmail || 'nieznany'}</li>
-                  <li><strong>Linia:</strong> ${lineName}${providerName ? ' (' + providerName + ')' : ''}</li>
-                  <li><strong>Konfiguracja:</strong> ${hardwareLabel}${addonsDesc ? ' + ' + addonsDesc : ''}</li>
-                  <li><strong>Okres:</strong> ${periodLabel}</li>
-                  <li><strong>Kwota:</strong> ${amountFormatted}</li>
+                  ${detailsListHtml}
                   <li><strong>Stripe session:</strong> <code>${session.id}</code></li>
                 </ul>
                 <p><a href="https://vps4u.xyz/admin">Otwórz panel admina →</a></p>
               `,
             });
+            console.log('Admin notification email sent', { to: adminEmail });
           }
         } catch (err) {
           console.error('Admin notification email failed', { error: err.message });
