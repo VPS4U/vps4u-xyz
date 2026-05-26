@@ -266,7 +266,7 @@
   // Pobierz wszystkie płatności (RLS odda wszystko jeśli admin).
   const { data: allPayments, error: paymentsErr } = await supabase
     .from('payments')
-    .select('id, provider, external_charge_id, amount_cents, currency, amount_pln_grosze, fx_rate, charged_at, quarter')
+    .select('id, provider, external_charge_id, amount_cents, currency, amount_pln_grosze, fx_rate, charged_at, month, quarter')
     .order('charged_at', { ascending: false });
 
   if (paymentsErr) {
