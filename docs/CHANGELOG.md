@@ -4,6 +4,13 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #39] — 2026-05-26
+
+- Fix: webhook race condition — gdy Stripe wysyła `checkout.session.completed` + `invoice.payment_succeeded` równolegle, ten drugi mógł trafić zanim profile dostał `stripe_customer_id`, → `Profile not found` → płatność NIE zapisana mimo udanej transakcji
+- `api/stripe/webhook.js` `findProfileByStripeId`: gdy lookup po `stripe_customer_id` zwraca null → fetch customer z Stripe API → email → znajdź/utwórz profile po email (jak `upsertProfileStripeId`) → update `stripe_customer_id` → zwróć recovered profile
+- Idempotent — jeśli profile już istnieje, sam update; jeśli createUser zwraca "already registered" (race), też OK
+- Ujawniło się przy świeżej E2E transakcji (poprzednie €15 weszło tylko po resend, sekwencyjnym)
+
 ## [PR #38] — 2026-05-26
 
 - `admin.html` — 2 zakładki na górze: **Cap & płatności** (default) + **Stripe**
