@@ -4,6 +4,13 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #38] — 2026-05-26
+
+- `admin.html` — 2 zakładki na górze: **Cap & płatności** (default) + **Stripe**
+- Sekcje "Stripe — stan synchronizacji" oraz "Setup Stripe" przeniesione do zakładki Stripe
+- Cap, ustawienia, ostatnie miesiące/kwartały/płatności → zakładka Cap & płatności
+- Czysty CSS tab nav (border-bottom highlight), JS toggle przez `data-tab` / `data-panel`
+
 ## [PR #37] — 2026-05-26
 
 - Fix admin dashboard — `Bieżący miesiąc` pokazywał `0 zł / 0 płatności` mimo że row jest w bazie z `month='2026-05'`

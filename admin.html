@@ -17,6 +17,12 @@
   .admin-head .who { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--ink-2); text-transform: uppercase; letter-spacing: .06em; }
   .admin-section { margin-top: 40px; }
   .admin-section h2 { font-family: 'Archivo Black', sans-serif; font-size: 18px; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 14px; }
+  .admin-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--ink); margin-top: 24px; }
+  .admin-tab { background: none; border: 0; padding: 12px 22px; font-family: 'Archivo Black', sans-serif; font-size: 14px; text-transform: uppercase; letter-spacing: .06em; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -2px; }
+  .admin-tab:hover { color: var(--ink); }
+  .admin-tab.active { color: var(--ink); border-bottom-color: var(--ink); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
   .quarter-card { border: 1.5px solid var(--ink); padding: 28px; background: var(--cream-2, #f5f0e6); }
   .quarter-card .label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
   .quarter-card .value { font-family: 'Archivo Black', sans-serif; font-size: 48px; line-height: 1; margin: 12px 0; letter-spacing: -0.02em; }
@@ -63,6 +69,13 @@
         <p class="who">Zalogowany jako: <strong id="user-email">…</strong> (admin)</p>
       </div>
     </header>
+
+    <nav class="admin-tabs" role="tablist">
+      <button type="button" class="admin-tab active" data-tab="cap" role="tab">Cap &amp; płatności</button>
+      <button type="button" class="admin-tab" data-tab="stripe" role="tab">Stripe</button>
+    </nav>
+
+    <div class="tab-panel active" data-panel="cap">
 
     <section class="admin-section">
       <h2 id="current-month-label">Bieżący miesiąc</h2>
@@ -137,6 +150,10 @@
       </form>
     </section>
 
+    </div><!-- /tab-panel cap (continued below after stripe panel) -->
+
+    <div class="tab-panel" data-panel="stripe">
+
     <section class="admin-section">
       <h2>Stripe — stan synchronizacji</h2>
       <div id="stripe-overview" class="quarter-card panel-loading" style="display:block">// Ładuję…</div>
@@ -158,6 +175,10 @@
         <pre id="setup-stripe-result" style="margin:0; padding:12px; background:var(--ink); color:var(--cream); font-family:'JetBrains Mono',monospace; font-size:11px; overflow:auto; display:none"></pre>
       </div>
     </section>
+
+    </div><!-- /tab-panel stripe -->
+
+    <div class="tab-panel active" data-panel="cap">
 
     <section class="admin-section">
       <h2>Ostatnie 6 miesięcy</h2>
@@ -205,6 +226,8 @@
       </table>
       <div id="payments-empty" class="panel-empty" style="display:none">// Brak płatności. Pierwsza pojawi się tutaj po realnej wpłacie przez Stripe.</div>
     </section>
+
+    </div><!-- /tab-panel cap (trailing) -->
   </div>
 
 </div>
@@ -566,6 +589,19 @@
 
   loading.style.display = 'none';
   content.style.display = 'block';
+
+  // Tabs: cap / stripe — wszystkie elementy z data-panel=X są show/hide razem (panel cap jest podzielony przez panel stripe).
+  document.querySelectorAll('.admin-tab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+      document
+        .querySelectorAll('.admin-tab')
+        .forEach((b) => b.classList.toggle('active', b.dataset.tab === target));
+      document
+        .querySelectorAll('.tab-panel')
+        .forEach((p) => p.classList.toggle('active', p.dataset.panel === target));
+    });
+  });
 
   document.getElementById('logout-btn').addEventListener('click', async () => {
     await supabase.auth.signOut();
