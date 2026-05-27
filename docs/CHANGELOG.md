@@ -4,6 +4,21 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #41] — 2026-05-27
+
+- **Stage 8.2**: panel klienta (vps4u.xyz/panel) wszystko-w-jednym — VPS-y + płatności + Stripe Customer Portal
+- `panel.html` — przepisany pod nowy schema vps_instances:
+  - Lista VPS-ów z kolorem linii (border-top w kolorze) + Linia ${color.label} + surowe kody `L+S+D + X`
+  - Dla active: IPv4, IPv6, hostname, kopiowalna komenda `ssh root@1.2.3.4`
+  - Przycisk **"Pokaż hasło / klucz SSH"** → fetch `/api/me/vps-credentials?id=X` → reveal jednorazowy + button disabled
+  - Dla pending: napis "VPS w trakcie uruchamiania, mail przyjdzie automatycznie <24h"
+- Sekcja **Płatności**: tabela ostatnich 20 płatności (data, kwota, PLN, charge ID) + przycisk **"Zarządzaj płatnościami (Stripe)"** → redirect do Stripe Customer Portal
+- `api/portal/create.js` — POST tworzy `stripe.billingPortal.sessions.create()` z `return_url=/panel`, klient zarządza kartą/cancel/paragony w hosted UI Stripe
+- `api/me/vps-credentials.js` — GET z param `id`, weryfikuje ownership (user_id == auth.userId), deszyfruje bytea AES-256-GCM, zwraca plaintext. Loguje każde wywołanie (audyt)
+- `lib/admin-auth.js` — nowy export `requireUser(token, config)` dla endpointów user-scoped (bez admin check)
+- Sekcja "Konto" uproszczona — usunięty Stripe customer ID (nieinteresujący dla klienta, ważny tylko dla admina)
+- **Wymagane przed deploy**: w Stripe Dashboard → Settings → Billing → **Customer Portal → Activate** + ustawić jakie funkcje dostępne (zmiana karty, cancel subscription, view payment history). Bez aktywacji endpoint zwróci 4xx ze Stripe
+
 ## [PR #40] — 2026-05-27
 
 - **Stage 8.1**: ręczny provisioning workflow VPS-ów (admin zamawia u Hetznera/Contabo i ręcznie wpisuje IP+SSH w panelu admina, klient dostaje mail z dostępami)

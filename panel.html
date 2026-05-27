@@ -56,15 +56,19 @@
     </section>
 
     <section class="panel-section">
-      <h2>Subskrypcje</h2>
-      <div id="subs-list" class="panel-empty">// Brak aktywnych subskrypcji.</div>
+      <h2>Płatności</h2>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:14px">
+        <button id="portal-btn" class="btn btn-primary" style="padding:10px 18px">Zarządzaj płatnościami (Stripe)</button>
+        <span id="portal-status" style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted)"></span>
+      </div>
+      <p style="margin:0 0 14px; font-size:13px; color:var(--muted)">Zmiana karty, anulowanie subskrypcji, pobranie potwierdzeń płatności — w bezpiecznym portalu Stripe.</p>
+      <div id="payments-list" class="panel-empty">// Brak płatności w historii.</div>
     </section>
 
     <section class="panel-section">
       <h2>Konto</h2>
       <div class="panel-card">
         <p style="margin:0 0 12px; font-size:14px"><strong>Email:</strong> <span id="account-email">…</span></p>
-        <p style="margin:0 0 12px; font-size:14px"><strong>Stripe customer ID:</strong> <span id="account-stripe" style="font-family:'JetBrains Mono',monospace; font-size:12px">—</span></p>
         <p style="margin:0; font-size:14px"><strong>Konto utworzone:</strong> <span id="account-created">…</span></p>
       </div>
     </section>
@@ -101,58 +105,148 @@
     .single();
 
   if (profile) {
-    document.getElementById('account-stripe').textContent = profile.stripe_customer_id || '— (brak — opłać zamówienie, żeby się pojawiło)';
     document.getElementById('account-created').textContent = new Date(profile.created_at).toLocaleString('pl-PL');
     if (profile.is_admin) {
       document.getElementById('admin-link').style.display = 'inline-block';
     }
   }
 
-  // VPS-y
+  // Polskie kolory linii (klienci znają oznaczenia ze starego sklepu)
+  const LINE_COLORS = {
+    gold: { hex: '#d4af37', label: 'Gold' },
+    orange: { hex: '#ff8c1a', label: 'Orange' },
+    czarny: { hex: '#1a1a1a', label: 'Czarny' },
+    bialy: { hex: '#f5f5f5', label: 'Biały' },
+    czerwony: { hex: '#d32f2f', label: 'Czerwony' },
+    niebieski: { hex: '#1e88e5', label: 'Niebieski' },
+  };
+
+  // VPS-y (nowy schema)
   const { data: vps } = await supabase
     .from('vps_instances')
-    .select('id, ip_address, region, status, created_at')
+    .select('id, line_sku, hardware_combo, addons, provider, ipv4, ipv6, ssh_user, hostname, status, provisioned_at, created_at')
     .order('created_at', { ascending: false });
 
   if (vps && vps.length > 0) {
     const list = document.getElementById('vps-list');
     list.className = '';
-    list.innerHTML = vps.map(v => `
-      <div class="panel-card" style="margin-bottom:12px">
-        <div style="display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap">
+    list.innerHTML = vps.map(v => {
+      const color = LINE_COLORS[v.line_sku] || { hex: '#888', label: v.line_sku };
+      const isActive = v.status === 'active';
+      const addonsStr = (v.addons || []).join(',');
+      const sshCmd = isActive && v.ipv4 ? `ssh ${v.ssh_user || 'root'}@${v.ipv4}` : '';
+      return `
+      <div class="panel-card" style="margin-bottom:14px; border-top:4px solid ${color.hex}">
+        <div style="display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:12px">
           <div>
-            <strong style="font-family:'Archivo Black',sans-serif">${v.region || '?'}</strong>
-            <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); margin-left:12px">${v.ip_address || 'oczekuje na IP'}</span>
-          </div>
-          <span style="font-family:'JetBrains Mono',monospace; font-size:11px; padding:2px 8px; border:1px solid var(--ink); text-transform:uppercase">${v.status}</span>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  // Subskrypcje
-  const { data: subs } = await supabase
-    .from('subscriptions')
-    .select('id, plan_name, status, current_period_end, cancel_at_period_end')
-    .order('created_at', { ascending: false });
-
-  if (subs && subs.length > 0) {
-    const list = document.getElementById('subs-list');
-    list.className = '';
-    list.innerHTML = subs.map(s => `
-      <div class="panel-card" style="margin-bottom:12px">
-        <div style="display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap">
-          <div>
-            <strong style="font-family:'Archivo Black',sans-serif">${s.plan_name}</strong>
-            <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); margin-left:12px">
-              ${s.current_period_end ? 'do ' + new Date(s.current_period_end).toLocaleDateString('pl-PL') : ''}
+            <strong style="font-family:'Archivo Black',sans-serif">Linia ${color.label}</strong>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); margin-left:8px">
+              <code>${v.hardware_combo}${addonsStr ? ' + ' + addonsStr : ''}</code> · ${v.provider}
             </span>
           </div>
-          <span style="font-family:'JetBrains Mono',monospace; font-size:11px; padding:2px 8px; border:1px solid var(--ink); text-transform:uppercase">${s.status}${s.cancel_at_period_end ? ' · anuluje się' : ''}</span>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:11px; padding:3px 10px; border:1px solid var(--ink); text-transform:uppercase; background:${isActive ? '#d4edda' : 'transparent'}">${v.status}</span>
         </div>
+        ${isActive ? `
+        <div style="font-size:13px; line-height:1.7">
+          ${v.ipv4 ? `<div><strong>IPv4:</strong> <code>${v.ipv4}</code></div>` : ''}
+          ${v.ipv6 ? `<div><strong>IPv6:</strong> <code>${v.ipv6}</code></div>` : ''}
+          ${v.hostname ? `<div><strong>Hostname:</strong> <code>${v.hostname}</code></div>` : ''}
+          ${sshCmd ? `<div style="margin-top:8px"><strong>SSH:</strong> <code>${sshCmd}</code></div>` : ''}
+          <div style="margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+            <button class="btn reveal-creds-btn" data-vps-id="${v.id}" style="padding:6px 14px; font-size:12px; background:var(--ink); color:var(--cream)">Pokaż hasło / klucz SSH</button>
+            <span class="creds-status" data-for="${v.id}" style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted)"></span>
+          </div>
+          <pre class="creds-output" data-for="${v.id}" style="display:none; margin:10px 0 0; padding:10px; background:#fff8e1; border-left:4px solid #f59e0b; font-family:'JetBrains Mono',monospace; font-size:12px; white-space:pre-wrap; word-break:break-all"></pre>
+          ${v.provisioned_at ? `<div style="margin-top:8px; font-size:11px; color:var(--muted)">Provisioned: ${new Date(v.provisioned_at).toLocaleString('pl-PL')}</div>` : ''}
+        </div>
+        ` : `
+        <p style="margin:0; font-size:13px; color:var(--muted)">VPS w trakcie uruchamiania. Mail z dostępami przyjdzie automatycznie gdy będzie gotowy (zwykle &lt;24h).</p>
+        `}
       </div>
-    `).join('');
+    `;
+    }).join('');
+
+    // Reveal handlers
+    list.querySelectorAll('.reveal-creds-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.vpsId;
+        const statusEl = list.querySelector(`.creds-status[data-for="${id}"]`);
+        const outputEl = list.querySelector(`.creds-output[data-for="${id}"]`);
+        statusEl.textContent = '// Pobieranie...';
+        try {
+          const r = await fetch(`/api/me/vps-credentials?id=${id}`, {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+          if (!r.ok) {
+            statusEl.textContent = '✗ ' + (await r.text());
+            return;
+          }
+          const { credentials } = await r.json();
+          outputEl.textContent = credentials;
+          outputEl.style.display = 'block';
+          statusEl.textContent = '✓ Skopiuj i zapisz — to dane logowania';
+          btn.disabled = true;
+          btn.textContent = 'Pokazane (odśwież stronę żeby ukryć)';
+        } catch (err) {
+          statusEl.textContent = '✗ ' + err.message;
+        }
+      });
+    });
   }
+
+  // Historia płatności
+  const { data: payments } = await supabase
+    .from('payments')
+    .select('id, amount_cents, currency, amount_pln_grosze, fx_rate, charged_at, external_charge_id')
+    .order('charged_at', { ascending: false })
+    .limit(20);
+
+  if (payments && payments.length > 0) {
+    const list = document.getElementById('payments-list');
+    list.className = '';
+    list.innerHTML = `
+      <table style="width:100%; border-collapse:collapse; font-size:13px">
+        <thead>
+          <tr style="border-bottom:1.5px solid var(--ink); text-align:left">
+            <th style="padding:8px 6px">Data</th>
+            <th style="padding:8px 6px">Kwota</th>
+            <th style="padding:8px 6px">PLN</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:11px">Charge ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${payments.map(p => `
+            <tr style="border-bottom:1px solid var(--ink-2,#ccc)">
+              <td style="padding:8px 6px">${new Date(p.charged_at).toLocaleDateString('pl-PL')}</td>
+              <td style="padding:8px 6px"><strong>${(p.amount_cents/100).toFixed(2)} ${p.currency.toUpperCase()}</strong></td>
+              <td style="padding:8px 6px">${(p.amount_pln_grosze/100).toFixed(2)} zł</td>
+              <td style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted)">${p.external_charge_id?.slice(0,16) || '—'}…</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  // Stripe Customer Portal button
+  document.getElementById('portal-btn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('portal-status');
+    statusEl.textContent = '// Przekierowuję do Stripe...';
+    try {
+      const r = await fetch('/api/portal/create', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!r.ok) {
+        statusEl.textContent = '✗ ' + (await r.text());
+        return;
+      }
+      const { url } = await r.json();
+      window.location.href = url;
+    } catch (err) {
+      statusEl.textContent = '✗ ' + err.message;
+    }
+  });
 
   loading.style.display = 'none';
   content.style.display = 'block';
