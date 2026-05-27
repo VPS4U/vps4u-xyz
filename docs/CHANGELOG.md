@@ -4,6 +4,19 @@ Każdy merge'owany PR ma tu wpis. Format: `## [PR #N] — YYYY-MM-DD` + bullet l
 
 ---
 
+## [PR #40] — 2026-05-27
+
+- **Stage 8.1**: ręczny provisioning workflow VPS-ów (admin zamawia u Hetznera/Contabo i ręcznie wpisuje IP+SSH w panelu admina, klient dostaje mail z dostępami)
+- Migracja 009 — rebuild `vps_instances` z pre-aggregator MVP do aggregator model: user_id, payment_id, line_sku, hardware_combo, addons, provider, IPv4/IPv6, ssh_user, **ssh_credentials_encrypted** (bytea), hostname, status (`pending|provisioning|active|cancelled`), provisioned_at, admin_notes. RLS: user czyta swoje, admin all
+- `lib/vps-crypto.js` — AES-256-GCM encrypt/decrypt SSH credentials, klucz w env `VPS_CREDENTIALS_KEY` (32B base64). 7 testów (round-trip, multi-line, tampering protection, wrong key)
+- `lib/admin-vps.js` — `providerForLine(sku)` mapowanie 6 linii → enum providera, `validateVpsPayload`, `markVpsDelivered`, `listPendingProvisioning` (DI dla supabase + mail)
+- `api/admin/vps-instances.js` — GET (list instances + pending) / POST `{action:'deliver'}` mark delivered + auto-send mail klienta z IP+SSH+hasło
+- `api/stripe/webhook.js` `onOrderConfirmed` — automatyczne tworzenie pending `vps_instance` po `checkout.session.completed` (idempotent po `admin_notes='stripe_session=...'`)
+- `admin.html` — nowa zakładka **VPS** (między Cap a Stripe): lista pending z formularzem provisioning + tabela active VPS-ów
+- 8 nowych testów (7 crypto + 8 admin-vps), total **132/132** zielone
+
+**Wymagane przed deploy**: dodaj w Vercel env `VPS_CREDENTIALS_KEY` = wygenerowany 32-bajtowy klucz base64 (production + preview + development)
+
 ## [PR #39] — 2026-05-26
 
 - Fix: webhook race condition — gdy Stripe wysyła `checkout.session.completed` + `invoice.payment_succeeded` równolegle, ten drugi mógł trafić zanim profile dostał `stripe_customer_id`, → `Profile not found` → płatność NIE zapisana mimo udanej transakcji

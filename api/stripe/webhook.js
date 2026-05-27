@@ -26,6 +26,7 @@ import {
   formatPriceEur,
   getLineColor,
 } from '../../lib/pricing.js';
+import { providerForLine } from '../../lib/admin-vps.js';
 import { requireEnv } from '../../lib/env.js';
 
 const ADDON_LABELS = { X: 'Rozszerzona sieć', A: 'Automatyczny backup' };
@@ -116,10 +117,51 @@ export default async function handler(req, res) {
         if (updateErr) throw updateErr;
       },
 
-      // Po checkout.session.completed: 2 maile (klient + admin).
+      // Po checkout.session.completed: 2 maile (klient + admin) + utworzenie pending vps_instance.
       onOrderConfirmed: async (session) => {
         const meta = session.metadata || {};
         const customerEmail = session.customer_details?.email;
+
+        // Utwórz pending vps_instance — admin zobaczy w /admin do provisioningu.
+        // Idempotent: jeśli ten sam stripe session_id już ma vps_instance, skipnij.
+        if (meta.line_sku && meta.hardware_combo && customerEmail) {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('email', customerEmail)
+              .maybeSingle();
+            const provider = providerForLine(meta.line_sku);
+            if (profile && provider) {
+              const { data: exists } = await supabase
+                .from('vps_instances')
+                .select('id')
+                .eq('user_id', profile.id)
+                .eq('admin_notes', `stripe_session=${session.id}`)
+                .maybeSingle();
+              if (!exists) {
+                const addons = (meta.addons || '').split(',').filter(Boolean);
+                const { error: insertErr } = await supabase.from('vps_instances').insert({
+                  user_id: profile.id,
+                  line_sku: meta.line_sku,
+                  hardware_combo: meta.hardware_combo,
+                  addons,
+                  provider,
+                  status: 'pending',
+                  admin_notes: `stripe_session=${session.id}`,
+                });
+                if (insertErr) {
+                  console.error('vps_instances insert failed', { error: insertErr.message });
+                } else {
+                  console.log('vps_instance created (pending)', { session: session.id });
+                }
+              }
+            }
+          } catch (err) {
+            console.error('vps_instance create failed', { error: err.message });
+            // Nie throw — to nie powinno blokować maila potwierdzenia.
+          }
+        }
 
         // Pobierz line marketing name + provider z DB
         let lineName = meta.line_sku || 'VPS';
