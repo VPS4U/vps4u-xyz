@@ -72,6 +72,7 @@
 
     <nav class="admin-tabs" role="tablist">
       <button type="button" class="admin-tab active" data-tab="cap" role="tab">Cap &amp; płatności</button>
+      <button type="button" class="admin-tab" data-tab="vps" role="tab">VPS</button>
       <button type="button" class="admin-tab" data-tab="stripe" role="tab">Stripe</button>
     </nav>
 
@@ -177,6 +178,38 @@
     </section>
 
     </div><!-- /tab-panel stripe -->
+
+    <div class="tab-panel" data-panel="vps">
+
+      <section class="admin-section">
+        <h2>VPS — do provisioning</h2>
+        <p style="margin:0 0 12px; font-size:14px; color:var(--muted)">
+          Lista pending VPS-ów (klient zapłacił, czeka na ręczne uruchomienie u providera). Po zamówieniu wpisz IP + dostępy SSH i klikaj "Wyślij dostępy klientowi".
+        </p>
+        <div id="vps-pending-empty" class="panel-empty" style="display:none">// Brak pending VPS-ów. Pojawi się tu gdy klient zapłaci.</div>
+        <div id="vps-pending-list"></div>
+      </section>
+
+      <section class="admin-section">
+        <h2>VPS — aktywne</h2>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Klient</th>
+              <th>Linia / HW</th>
+              <th>Provider</th>
+              <th>IPv4</th>
+              <th>Hostname</th>
+              <th>Provisioned</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="vps-active-body"></tbody>
+        </table>
+        <div id="vps-active-empty" class="panel-empty" style="display:none">// Jeszcze żaden VPS nie został dostarczony.</div>
+      </section>
+
+    </div><!-- /tab-panel vps -->
 
     <div class="tab-panel active" data-panel="cap">
 
@@ -470,6 +503,125 @@
   }
 
   await renderStripeOverview();
+
+  // ---------- VPS tab ----------
+  async function renderVpsTab() {
+    const token = session.access_token;
+    const resp = await fetch('/api/admin/vps-instances', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!resp.ok) {
+      console.error('vps fetch failed', await resp.text());
+      return;
+    }
+    const { instances, pending } = await resp.json();
+
+    // Pending list (płatności bez vps_instance + pending vps_instance)
+    const pendingVps = (instances || []).filter((v) => v.status === 'pending');
+    const pendingHtml = pendingVps
+      .map(
+        (v) => `
+      <div class="quarter-card" style="margin-bottom:20px">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px">
+          <div>
+            <strong>${v.profiles?.email || 'nieznany'}</strong> · <code>${v.line_sku}</code> + <code>${v.hardware_combo}</code>${(v.addons || []).length ? ' + ' + v.addons.join(',') : ''}<br>
+            <span style="font-size:12px; color:var(--muted)">Provider: <strong>${v.provider}</strong> · utworzono ${new Date(v.created_at).toLocaleString('pl-PL')}</span>
+          </div>
+        </div>
+        <form data-vps-id="${v.id}" style="margin-top:14px; display:grid; gap:8px; grid-template-columns:1fr 1fr">
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:12px">
+            Provider instance ID
+            <input type="text" name="provider_instance_id" placeholder="np. 12345678" style="padding:6px 8px; border:1.5px solid var(--ink); font-family:'JetBrains Mono',monospace; font-size:13px" />
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:12px">
+            Hostname
+            <input type="text" name="hostname" placeholder="vps-001.vps4u.xyz" style="padding:6px 8px; border:1.5px solid var(--ink); font-family:'JetBrains Mono',monospace; font-size:13px" />
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:12px">
+            IPv4
+            <input type="text" name="ipv4" required placeholder="1.2.3.4" style="padding:6px 8px; border:1.5px solid var(--ink); font-family:'JetBrains Mono',monospace; font-size:13px" />
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:12px">
+            IPv6 (opcjonalnie)
+            <input type="text" name="ipv6" placeholder="2a01::1" style="padding:6px 8px; border:1.5px solid var(--ink); font-family:'JetBrains Mono',monospace; font-size:13px" />
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:12px">
+            SSH user
+            <input type="text" name="ssh_user" value="root" style="padding:6px 8px; border:1.5px solid var(--ink); font-family:'JetBrains Mono',monospace; font-size:13px" />
+          </label>
+          <div></div>
+          <label style="grid-column:1/-1; display:flex; flex-direction:column; gap:4px; font-size:12px">
+            Hasło root / klucz prywatny (do mail klienta, szyfrowane w DB)
+            <textarea name="ssh_credentials" required rows="3" placeholder="hasło lub -----BEGIN OPENSSH PRIVATE KEY-----" style="padding:6px 8px; border:1.5px solid var(--ink); font-family:'JetBrains Mono',monospace; font-size:13px; resize:vertical"></textarea>
+          </label>
+          <div style="grid-column:1/-1; display:flex; gap:10px; align-items:center">
+            <button type="submit" class="btn btn-primary" style="padding:8px 18px">Wyślij dostępy klientowi</button>
+            <span class="vps-status" style="font-family:'JetBrains Mono',monospace; font-size:12px"></span>
+          </div>
+        </form>
+      </div>`
+      )
+      .join('');
+
+    const listEl = document.getElementById('vps-pending-list');
+    const emptyEl = document.getElementById('vps-pending-empty');
+    listEl.innerHTML = pendingHtml;
+    emptyEl.style.display = pendingVps.length ? 'none' : 'block';
+
+    // Bind submit handlers
+    listEl.querySelectorAll('form[data-vps-id]').forEach((form) => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = form.dataset.vpsId;
+        const statusEl = form.querySelector('.vps-status');
+        const formData = Object.fromEntries(new FormData(form).entries());
+        const sshCredentials = formData.ssh_credentials;
+        delete formData.ssh_credentials;
+
+        statusEl.textContent = '// Wysyłanie...';
+        const r = await fetch('/api/admin/vps-instances', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            action: 'deliver',
+            id,
+            fields: formData,
+            ssh_credentials: sshCredentials,
+          }),
+        });
+        if (r.ok) {
+          statusEl.textContent = '✓ Wysłano dostępy';
+          setTimeout(renderVpsTab, 1200);
+        } else {
+          statusEl.textContent = '✗ ' + (await r.text());
+        }
+      });
+    });
+
+    // Active VPS table
+    const activeVps = (instances || []).filter((v) => v.status === 'active');
+    const activeBody = document.getElementById('vps-active-body');
+    activeBody.innerHTML = activeVps
+      .map(
+        (v) => `
+      <tr>
+        <td>${v.profiles?.email || '—'}</td>
+        <td><code>${v.line_sku}</code> ${v.hardware_combo}</td>
+        <td>${v.provider}</td>
+        <td><code>${v.ipv4 || '—'}</code></td>
+        <td>${v.hostname || '—'}</td>
+        <td>${v.provisioned_at ? new Date(v.provisioned_at).toLocaleDateString('pl-PL') : '—'}</td>
+        <td>${v.status}</td>
+      </tr>`
+      )
+      .join('');
+    document.getElementById('vps-active-empty').style.display = activeVps.length ? 'none' : 'block';
+  }
+
+  await renderVpsTab();
 
   // Setup Stripe — dry-run i pełne wykonanie
   const setupStatus = document.getElementById('setup-stripe-status');
